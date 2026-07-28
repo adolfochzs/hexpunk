@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ══ SEGURIDAD ══════════════════════════════════════════════════════════
+         Content Security Policy — bloquea inyección de scripts externos.
+         - script-src: solo el propio origen + módulos ES inline (Vite dev)
+         - connect-src: Base Mainnet RPC público + Basescan API
+         - img-src: propio origen + data URIs (favicon inline)
+         - object-src: none — bloquea Flash/plugins obsoletos
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      connect-src 'self'
+        https://mainnet.base.org
+        https://api.basescan.org
+        https://basescan.org
+        wss://mainnet.base.org;
+      img-src 'self' data: https:;
+      font-src 'self' data: https://fonts.gstatic.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    " />
+    <!-- Evita que el browser "adivine" el MIME type de recursos -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <!-- No envía Referer al salir del sitio (privacidad del usuario) -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%2309090B'/><text y='.9em' font-size='80' x='10'>⬡</text></svg>" />
+
+    <!-- SEO -->
+    <title>$HEXPUNK — Digital Organism</title>
+    <meta name="description" content="$HEXPUNK is a native B20 token on Base. Fixed supply of 3,000,000 tokens. ERC-20 superset precompile with roles, supply cap, and pausing integrated at the protocol level." />
+    <meta name="author" content="HEXPUNK" />
+    <meta name="theme-color" content="#09090B" />
+
+    <!-- Open Graph (links en Telegram, WhatsApp, Discord, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="$HEXPUNK — Digital Organism" />
+    <meta property="og:description" content="Native B20 token on Base. Fixed supply of 3,000,000. Address: 0xb20000000000000000000024A9Cd928Ff6277db8" />
+    <meta property="og:url" content="https://hexpunk.base.org" />
+    <meta property="og:site_name" content="HEXPUNK" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="$HEXPUNK — Digital Organism" />
+    <meta name="twitter:description" content="Native B20 token on Base. Fixed supply of 3,000,000. Address: 0xb20000000000000000000024A9Cd928Ff6277db8" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

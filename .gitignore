@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+.vite/
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Prototypes / temp files
+hexpunk_portal_prototype.html
