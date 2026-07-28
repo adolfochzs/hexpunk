@@ -18,7 +18,7 @@ import { useState, useEffect } from "react";
 const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const DECIMALS        = 18n;
-const BLOCK_RANGE     = 50_000n; // ~27 hours @ 2s/block on Base
+const BLOCK_RANGE     = 10_000n; // ~5.5 hours @ 2s/block on Base (public RPC limit)
 
 // TransferWithMemo event ABI (indexed: from, memo — no data field)
 const TRANSFER_WITH_MEMO_EVENT = {
