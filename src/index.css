@@ -262,7 +262,7 @@ h2{
 
 .day90{ border:1px solid var(--purple); padding:28px; margin-top:24px; }
 .day90-bar{ height:6px; background:rgba(139,47,224,0.2); margin-top:14px; position:relative; }
-.day90-fill{ height:100%; width:34%; background:var(--purple); }
+.day90-fill{ height:100%; background:var(--purple); transition: width 0.8s ease; }
 .day90-label{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); margin-top:8px; }
 
 /* ══ RELIQUIAS ══ */

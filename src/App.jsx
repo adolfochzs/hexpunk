@@ -1,6 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { useChainData } from "./hooks/useChainData";
 
+// ─── Project constants ─────────────────────────────────────────────────────────
+// Day 0 = contract deploy date on Base Mainnet
+const LAUNCH_DATE   = new Date("2026-06-25T00:00:00Z");
+const TOTAL_DAYS    = 90;
+const CONTRACT_ADDR = "0xb20000000000000000000024A9Cd928Ff6277db8";
+
+function calcDay() {
+  const diff = Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86_400_000);
+  return Math.min(Math.max(diff, 0), TOTAL_DAYS);
+}
+
 // ─── Tag badge ─────────────────────────────────────────────────────────────────
 function FeedTag({ type }) {
   return <div className={`tag ${type}`}>{type.toUpperCase()}</div>;
@@ -19,9 +30,21 @@ function FeedSkeleton() {
 }
 
 export default function App() {
-  const [integrity, setIntegrity] = useState(100.0);
-  const [fragments, setFragments] = useState("");
-  const [epitaph, setEpitaph] = useState("");
+  const [integrity, setIntegrity]   = useState(100.0);
+  const [fragments, setFragments]   = useState("");
+  const [epitaph, setEpitaph]       = useState("");
+  const [currentDay, setCurrentDay] = useState(calcDay);
+  const [sacrificeMsg, setSacrificeMsg] = useState(null);
+
+  // Recalculate day at midnight
+  useEffect(() => {
+    const msToMidnight = () => {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now;
+    };
+    const t = setTimeout(() => setCurrentDay(calcDay()), msToMidnight());
+    return () => clearTimeout(t);
+  }, [currentDay]);
 
   // ── Live blockchain data ──────────────────────────────────────────────────
   const chainData = useChainData();
@@ -77,7 +100,7 @@ export default function App() {
           <div>NETWORK<b>Base Mainnet</b></div>
           <div>SUPPLY<b>3,000,000</b></div>
           <div>STANDARD<b>B20</b></div>
-          <div>DAY<b>34 / 90</b></div>
+          <div>DAY<b>{currentDay} / {TOTAL_DAYS}</b></div>
         </div>
         <div className="hero-cta">
           <button className="btn primary" onClick={() => handleScrollTo("memoryhole")}>
@@ -122,7 +145,7 @@ export default function App() {
               </div>
             ) : chainData.scars.length === 0 ? (
               <div className="feed-row" style={{ color: "var(--ink-dim)", fontFamily: "var(--mono)", fontSize: 12 }}>
-                No scars inscribed in the last 27 hours. Be the first.
+                No scars inscribed in the last 48 hours. Be the first.
               </div>
             ) : (
               chainData.scars.map((scar, i) => (
@@ -168,11 +191,15 @@ export default function App() {
               <div className="l">BURNED FRAGMENTS</div>
             </div>
             <div className="stat">
-              <div className="n">—</div>
+              <div className="n">
+                {chainData.loading ? "—" : chainData.totalScars.toLocaleString()}
+              </div>
               <div className="l">TRANSMISSIONS</div>
             </div>
             <div className="stat">
-              <div className="n">—</div>
+              <div className="n">
+                {chainData.loading ? "—" : (chainData.activeCustodians ?? "—").toLocaleString()}
+              </div>
               <div className="l">ACTIVE CUSTODIANS</div>
             </div>
           </div>
@@ -223,7 +250,40 @@ export default function App() {
                   {epitaph.length} / 32
                 </div>
               </div>
-              <button className="btn-burn">EXECUTE SACRIFICE</button>
+              <button
+                className="btn-burn"
+                disabled={!fragments || !epitaph}
+                onClick={() => {
+                  const amt  = parseFloat(fragments);
+                  if (isNaN(amt) || amt <= 0) { setSacrificeMsg({ type: "error", text: "Enter a valid amount." }); return; }
+                  if (!epitaph.trim()) { setSacrificeMsg({ type: "error", text: "Epitaph cannot be empty." }); return; }
+                  // Encode epitaph as bytes32 hex
+                  const bytes  = new TextEncoder().encode(epitaph.slice(0, 32));
+                  const padded = Array.from({ length: 32 }, (_, i) => (bytes[i] ?? 0).toString(16).padStart(2, "0")).join("");
+                  const bytes32 = "0x" + padded;
+                  const rawAmt  = BigInt(Math.floor(amt * 1e18)).toString();
+                  const cmd = `cast send ${CONTRACT_ADDR} "burnWithMemo(uint256,bytes32)" ${rawAmt} ${bytes32} --rpc-url $RPC_URL --private-key $PRIVATE_KEY`;
+                  setSacrificeMsg({ type: "cmd", text: cmd });
+                }}
+              >
+                EXECUTE SACRIFICE
+              </button>
+              {sacrificeMsg && (
+                <div style={{
+                  marginTop: 12,
+                  padding: "12px 14px",
+                  border: `1px solid ${sacrificeMsg.type === "error" ? "var(--magenta)" : "var(--acid)"}`,
+                  fontFamily: "var(--mono)",
+                  fontSize: 11,
+                  color: sacrificeMsg.type === "error" ? "var(--magenta)" : "var(--acid)",
+                  lineHeight: 1.6,
+                  wordBreak: "break-all",
+                }}>
+                  {sacrificeMsg.type === "cmd" ? (
+                    <><b>Run in your terminal:</b><br />{sacrificeMsg.text}</>
+                  ) : sacrificeMsg.text}
+                </div>
+              )}
               <div className="ritual-warn">
                 This action is irreversible. The epitaph will be permanently recorded.
                 There is no way to recover the fragments once destroyed.
@@ -313,9 +373,13 @@ export default function App() {
                 <div style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--ink-dim)" }}>
                   Permanent sealing of administrative powers
                 </div>
-                <div className="day90-bar"><div className="day90-fill" /></div>
+                <div className="day90-bar">
+                  <div className="day90-fill" style={{ width: `${(currentDay / TOTAL_DAYS) * 100}%` }} />
+                </div>
                 <div className="day90-label">
-                  <span>DAY 0</span><span>DAY 34 — TODAY</span><span>DAY 90 — SEALED</span>
+                  <span>DAY 0</span>
+                  <span>DAY {currentDay} — TODAY</span>
+                  <span>DAY {TOTAL_DAYS} — SEALED</span>
                 </div>
               </div>
             </div>
