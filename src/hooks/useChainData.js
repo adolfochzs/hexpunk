@@ -22,14 +22,16 @@ const BLOCK_RANGE     = 86_400n; // ~48 hours @ 2s/block on Base
 const CHUNK_SIZE      = 9_900n;  // public Base RPC limits getLogs to 10,000 blocks/call
 
 // TransferWithMemo event ABI
-// Actual topics emitted: [eventSig, from, to, memo]
-// Verified via tx 0xb63b089284fa340a936b6c113f661bb956432ea9f1184b268c471c86664e4889
+// topic[0] = 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
+//   = keccak256("TransferWithMemo(address,bytes32)")
+// topic[1] = from  (indexed address)
+// topic[2] = memo  (indexed bytes32)
+// NOTE: the event does NOT have a 'to' field — only from + memo.
 const TRANSFER_WITH_MEMO_EVENT = {
   type: "event",
   name: "TransferWithMemo",
   inputs: [
     { name: "from", type: "address", indexed: true },
-    { name: "to",   type: "address", indexed: true },
     { name: "memo", type: "bytes32", indexed: true },
   ],
 };
@@ -139,8 +141,7 @@ export async function fetchChainData() {
 
   const scars = recentLogs.map((log) => ({
     from:    shortAddr(log.topics[1]),         // topics[1] = from
-    to:      shortAddr(log.topics[2]),         // topics[2] = to
-    memo:    decodeBytes32(log.topics[3] ?? ""), // topics[3] = memo
+    memo:    decodeBytes32(log.topics[2] ?? ""), // topics[2] = memo
     timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
     txHash:  log.transactionHash,
   }));

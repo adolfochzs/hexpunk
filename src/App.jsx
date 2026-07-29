@@ -130,12 +130,12 @@ export default function App() {
                   <FeedTag type="memo" />
                   <div className="feed-addr">{scar.from}</div>
                   <div className="feed-msg">
-                    <span style={{ color: "var(--ink-dim)" }}>{scar.from}</span>
-                    {" → "}
-                    <span style={{ color: "var(--teal)" }}>{scar.to}</span>
+                    transferWithMemo →{" "}
                     {scar.memo ? (
-                      <> &nbsp;<span className="quote">"{scar.memo}"</span></>
-                    ) : null}
+                      <span className="quote">"{scar.memo}"</span>
+                    ) : (
+                      <span style={{ color: "var(--ink-dim)" }}>[no memo]</span>
+                    )}
                   </div>
                   <div className="feed-time">
                     <a
