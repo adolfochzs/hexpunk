@@ -19,6 +19,7 @@ const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const DECIMALS        = 18n;
 const BLOCK_RANGE     = 86_400n; // ~48 hours @ 2s/block on Base
+const CHUNK_SIZE      = 9_900n;  // public Base RPC limits getLogs to 10,000 blocks/call
 
 // TransferWithMemo event ABI
 // Actual topics emitted: [eventSig, from, to, memo]
@@ -90,19 +91,41 @@ function formatTokens(raw) {
   return Number(whole).toLocaleString("en-US");
 }
 
+/**
+ * Fetch logs in CHUNK_SIZE-block windows to stay within the public RPC limit
+ * of 10,000 blocks per eth_getLogs call on mainnet.base.org.
+ */
+async function getLogsChunked(fromBlock, toBlock) {
+  const allLogs = [];
+  let chunkFrom = fromBlock;
+
+  while (chunkFrom <= toBlock) {
+    const chunkTo = (chunkFrom + CHUNK_SIZE - 1n < toBlock)
+      ? chunkFrom + CHUNK_SIZE - 1n
+      : toBlock;
+
+    const chunk = await client.getLogs({
+      address:   HEXPUNK_ADDRESS,
+      event:     TRANSFER_WITH_MEMO_EVENT,
+      fromBlock: chunkFrom,
+      toBlock:   chunkTo,
+    });
+
+    allLogs.push(...chunk);
+    chunkFrom = chunkTo + 1n;
+  }
+
+  return allLogs;
+}
+
 // ─── Main fetch function ──────────────────────────────────────────────────────
 export async function fetchChainData() {
   const latestBlock = await client.getBlockNumber();
   const fromBlock   = latestBlock > BLOCK_RANGE ? latestBlock - BLOCK_RANGE : 0n;
 
-  // Parallel: fetch event logs + burned balance
+  // Parallel: chunked event logs + burned balance
   const [logs, burnedRaw] = await Promise.all([
-    client.getLogs({
-      address: HEXPUNK_ADDRESS,
-      event:   TRANSFER_WITH_MEMO_EVENT,
-      fromBlock,
-      toBlock: latestBlock,
-    }),
+    getLogsChunked(fromBlock, latestBlock),
     client.readContract({
       address:      HEXPUNK_ADDRESS,
       abi:          BALANCE_OF_ABI,
