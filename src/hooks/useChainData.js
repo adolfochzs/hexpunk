@@ -18,14 +18,17 @@ import { useState, useEffect } from "react";
 const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const DECIMALS        = 18n;
-const BLOCK_RANGE     = 10_000n; // ~5.5 hours @ 2s/block on Base (public RPC limit)
+const BLOCK_RANGE     = 86_400n; // ~48 hours @ 2s/block on Base
 
-// TransferWithMemo event ABI (indexed: from, memo — no data field)
+// TransferWithMemo event ABI
+// Actual topics emitted: [eventSig, from, to, memo]
+// Verified via tx 0xb63b089284fa340a936b6c113f661bb956432ea9f1184b268c471c86664e4889
 const TRANSFER_WITH_MEMO_EVENT = {
   type: "event",
   name: "TransferWithMemo",
   inputs: [
     { name: "from", type: "address", indexed: true },
+    { name: "to",   type: "address", indexed: true },
     { name: "memo", type: "bytes32", indexed: true },
   ],
 };
@@ -112,8 +115,9 @@ export async function fetchChainData() {
   const recentLogs = [...logs].reverse().slice(0, 10);
 
   const scars = recentLogs.map((log) => ({
-    from:    shortAddr(log.topics[1]),
-    memo:    decodeBytes32(log.topics[2] ?? ""),
+    from:    shortAddr(log.topics[1]),         // topics[1] = from
+    to:      shortAddr(log.topics[2]),         // topics[2] = to
+    memo:    decodeBytes32(log.topics[3] ?? ""), // topics[3] = memo
     timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
     txHash:  log.transactionHash,
   }));
