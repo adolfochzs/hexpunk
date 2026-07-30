@@ -3,8 +3,9 @@
  * Reads live on-chain data from Base Mainnet — no API key required.
  *
  * Events consumed:
- *   TransferWithMemo(address indexed from, bytes32 indexed memo)
- *   topic: 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
+ *   Memo(address indexed caller, bytes32 indexed memo)
+ *   topic0: 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
+ *          = keccak256("Memo(address,bytes32)")
  *
  * Contract: 0xb20000000000000000000024A9Cd928Ff6277db8 ($HEXPUNK B20)
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
@@ -18,15 +19,14 @@ import { useState, useEffect } from "react";
 const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const DECIMALS        = 18n;
-const BLOCK_RANGE     = 86_400n; // ~48 hours @ 2s/block on Base
-const CHUNK_SIZE      = 9_900n;  // public Base RPC limits getLogs to 10,000 blocks/call
+const BLOCK_RANGE     = 302_400n; // ~7 days @ 2s/block on Base
+const CHUNK_SIZE      = 9_900n;   // public Base RPC limits getLogs to 10,000 blocks/call
 
-// TransferWithMemo event ABI
+// Memo event ABI (real on-chain event name confirmed via Basescan)
 // topic[0] = 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
-//   = keccak256("TransferWithMemo(address,bytes32)")
-// topic[1] = from  (indexed address)
-// topic[2] = memo  (indexed bytes32)
-// NOTE: the event does NOT have a 'to' field — only from + memo.
+//          = keccak256("Memo(address,bytes32)")
+// topic[1] = caller (indexed address)
+// topic[2] = memo   (indexed bytes32)
 const TRANSFER_WITH_MEMO_EVENT = {
   type: "event",
   name: "Memo",
