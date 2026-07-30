@@ -29,9 +29,9 @@ const CHUNK_SIZE      = 9_900n;  // public Base RPC limits getLogs to 10,000 blo
 // NOTE: the event does NOT have a 'to' field — only from + memo.
 const TRANSFER_WITH_MEMO_EVENT = {
   type: "event",
-  name: "TransferWithMemo",
+  name: "Memo",
   inputs: [
-    { name: "from", type: "address", indexed: true },
+    { name: "caller", type: "address", indexed: true },
     { name: "memo", type: "bytes32", indexed: true },
   ],
 };
@@ -146,10 +146,16 @@ export async function fetchChainData() {
     txHash:  log.transactionHash,
   }));
 
+  // Unique wallet addresses that have inscribed a scar
+  const activeCustodians = new Set(
+    logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
+  ).size;
+
   return {
     scars,
     totalScars:      logs.length,
     burnedFragments: formatTokens(burnedRaw),
+    activeCustodians,
   };
 }
 
