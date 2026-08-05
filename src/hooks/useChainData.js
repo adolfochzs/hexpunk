@@ -11,22 +11,18 @@
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
  */
 
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, fallback } from "viem";
 import { base } from "viem/chains";
 import { useState, useEffect } from "react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
+const INITIAL_SUPPLY  = 3_000_000n * 10n ** 18n;
 const DECIMALS        = 18n;
-const BLOCK_RANGE     = 302_400n; // ~7 days @ 2s/block on Base
-const CHUNK_SIZE      = 9_900n;   // public Base RPC limits getLogs to 10,000 blocks/call
+const CHUNK_SIZE      = 9_900n; // Public Base RPCs strictly limit getLogs to 10,000 blocks/call
 
-// Memo event ABI (real on-chain event name confirmed via Basescan)
-// topic[0] = 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
-//          = keccak256("Memo(address,bytes32)")
-// topic[1] = caller (indexed address)
-// topic[2] = memo   (indexed bytes32)
+// Memo event ABI
 const TRANSFER_WITH_MEMO_EVENT = {
   type: "event",
   name: "Memo",
@@ -36,19 +32,33 @@ const TRANSFER_WITH_MEMO_EVENT = {
   ],
 };
 
-// ERC-20 balanceOf ABI fragment
-const BALANCE_OF_ABI = [{
-  name: "balanceOf",
-  type: "function",
-  inputs:  [{ name: "account", type: "address" }],
-  outputs: [{ name: "",        type: "uint256" }],
-  stateMutability: "view",
-}];
+// ABI for totalSupply and balanceOf
+const STATS_ABI = [
+  {
+    name: "totalSupply",
+    type: "function",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    name: "balanceOf",
+    type: "function",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+];
 
-// ─── Client ───────────────────────────────────────────────────────────────────
+// ─── Client with automatic RPC Fallback ───────────────────────────────────────
 const client = createPublicClient({
   chain: base,
-  transport: http("https://mainnet.base.org"),
+  transport: fallback([
+    http("https://mainnet.base.org"),
+    http("https://base.llamarpc.com"),
+    http("https://1rpc.io/base"),
+    http("https://base.meowrpc.com"),
+  ]),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -75,13 +85,10 @@ function shortAddr(topic) {
   return addr.slice(0, 6) + "…" + addr.slice(-4);
 }
 
-/**
- * Estimate relative time using block distance.
- * Base Mainnet ≈ 2 s / block — avoids individual eth_getBlockByNumber calls.
- */
+/** Estimate relative time using block distance (Base ≈ 2s/block). */
 function blocksToTimeAgo(logBlock, latestBlock) {
   const diffSeconds = Number(latestBlock - logBlock) * 2;
-  if (diffSeconds < 60)   return `${diffSeconds}s ago`;
+  if (diffSeconds < 60) return `${Math.max(1, diffSeconds)}s ago`;
   if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
   if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
   return `${Math.floor(diffSeconds / 86400)}d ago`;
@@ -94,56 +101,78 @@ function formatTokens(raw) {
 }
 
 /**
- * Fetch logs in CHUNK_SIZE-block windows to stay within the public RPC limit
- * of 10,000 blocks per eth_getLogs call on mainnet.base.org.
+ * Fetch logs in parallel safe chunks within public RPC's 10,000-block limit.
  */
-async function getLogsChunked(fromBlock, toBlock) {
-  const allLogs = [];
-  let chunkFrom = fromBlock;
+async function getRecentLogs(latestBlock) {
+  const chunk1From = latestBlock > CHUNK_SIZE ? latestBlock - CHUNK_SIZE : 0n;
+  const chunk2From = latestBlock > CHUNK_SIZE * 2n ? latestBlock - CHUNK_SIZE * 2n : 0n;
+  const chunk2To   = chunk1From > 0n ? chunk1From - 1n : 0n;
 
-  while (chunkFrom <= toBlock) {
-    const chunkTo = (chunkFrom + CHUNK_SIZE - 1n < toBlock)
-      ? chunkFrom + CHUNK_SIZE - 1n
-      : toBlock;
+  const promises = [
+    client.getLogs({
+      address: HEXPUNK_ADDRESS,
+      event: TRANSFER_WITH_MEMO_EVENT,
+      fromBlock: chunk1From,
+      toBlock: latestBlock,
+    }),
+  ];
 
-    const chunk = await client.getLogs({
-      address:   HEXPUNK_ADDRESS,
-      event:     TRANSFER_WITH_MEMO_EVENT,
-      fromBlock: chunkFrom,
-      toBlock:   chunkTo,
-    });
-
-    allLogs.push(...chunk);
-    chunkFrom = chunkTo + 1n;
+  if (chunk2From < chunk2To) {
+    promises.push(
+      client.getLogs({
+        address: HEXPUNK_ADDRESS,
+        event: TRANSFER_WITH_MEMO_EVENT,
+        fromBlock: chunk2From,
+        toBlock: chunk2To,
+      })
+    );
   }
 
-  return allLogs;
+  const results = await Promise.allSettled(promises);
+  const logs = [];
+  for (const res of results) {
+    if (res.status === "fulfilled" && Array.isArray(res.value)) {
+      logs.push(...res.value);
+    }
+  }
+  return logs;
 }
 
 // ─── Main fetch function ──────────────────────────────────────────────────────
 export async function fetchChainData() {
   const latestBlock = await client.getBlockNumber();
-  const fromBlock   = latestBlock > BLOCK_RANGE ? latestBlock - BLOCK_RANGE : 0n;
 
-  // Parallel: chunked event logs + burned balance
-  const [logs, burnedRaw] = await Promise.all([
-    getLogsChunked(fromBlock, latestBlock),
+  // Parallel: event logs + contract supply + dead balance
+  const [logsResult, supplyResult, deadResult] = await Promise.allSettled([
+    getRecentLogs(latestBlock),
     client.readContract({
-      address:      HEXPUNK_ADDRESS,
-      abi:          BALANCE_OF_ABI,
+      address: HEXPUNK_ADDRESS,
+      abi: STATS_ABI,
+      functionName: "totalSupply",
+    }),
+    client.readContract({
+      address: HEXPUNK_ADDRESS,
+      abi: STATS_ABI,
       functionName: "balanceOf",
-      args:         [DEAD_ADDRESS],
+      args: [DEAD_ADDRESS],
     }),
   ]);
+
+  const logs = logsResult.status === "fulfilled" ? logsResult.value : [];
+  const currentSupply = supplyResult.status === "fulfilled" ? supplyResult.value : INITIAL_SUPPLY;
+  const deadBalance = deadResult.status === "fulfilled" ? deadResult.value : 0n;
+
+  // Calculate burned supply: (INITIAL_SUPPLY - totalSupply) + dead balance
+  const burnedRaw = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
 
   // Latest 10 scars, newest first
   const recentLogs = [...logs].reverse().slice(0, 10);
 
   const scars = recentLogs.map((log) => ({
-    from:    shortAddr(log.topics[1]),         // topics[1] = from
-    memo:    decodeBytes32(log.topics[2] ?? ""), // topics[2] = memo
+    from: shortAddr(log.topics[1]),
+    memo: decodeBytes32(log.topics[2] ?? ""),
     timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
-    txHash:  log.transactionHash,
+    txHash: log.transactionHash,
   }));
 
   // Unique wallet addresses that have inscribed a scar
@@ -153,7 +182,7 @@ export async function fetchChainData() {
 
   return {
     scars,
-    totalScars:      logs.length,
+    totalScars: logs.length,
     burnedFragments: formatTokens(burnedRaw),
     activeCustodians,
   };
@@ -162,11 +191,12 @@ export async function fetchChainData() {
 // ─── React hook ──────────────────────────────────────────────────────────────
 export function useChainData() {
   const [data, setData] = useState({
-    scars:           [],
-    totalScars:      0,
-    burnedFragments: "—",
-    loading:         true,
-    error:           null,
+    scars: [],
+    totalScars: 0,
+    burnedFragments: "0",
+    activeCustodians: 0,
+    loading: true,
+    error: null,
   });
 
   useEffect(() => {
@@ -179,10 +209,18 @@ export function useChainData() {
       .catch((err) => {
         console.error("[useChainData]", err);
         if (!cancelled)
-          setData((prev) => ({ ...prev, loading: false, error: err.message }));
+          setData((prev) => ({
+            ...prev,
+            loading: false,
+            burnedFragments: "0",
+            activeCustodians: 0,
+            error: null, // Fail gracefully without breaking UI
+          }));
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return data;

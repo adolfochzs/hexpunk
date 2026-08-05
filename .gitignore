@@ -18,3 +18,7 @@ Thumbs.db
 
 # Prototypes / temp files
 hexpunk_portal_prototype.html
+check_rpc.py
+check_logs.sh
+check_logs.mjs
+
