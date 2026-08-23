@@ -9,6 +9,7 @@
  *
  * Contract: 0xb20000000000000000000024A9Cd928Ff6277db8 ($HEXPUNK B20)
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
+ * Deploy block: 48,380,580 — scans ALL history since genesis
  */
 
 import { createPublicClient, http, fallback } from "viem";
@@ -20,7 +21,9 @@ const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const INITIAL_SUPPLY  = 3_000_000n * 10n ** 18n;
 const DECIMALS        = 18n;
-const CHUNK_SIZE      = 9_900n; // Public Base RPCs strictly limit getLogs to 10,000 blocks/call
+const DEPLOY_BLOCK    = 48_380_580n; // Block where HEXPUNK was deployed on Base Mainnet
+const CHUNK_SIZE      = 9_900n;      // Public Base RPCs strictly limit getLogs to 10,000 blocks/call
+const MAX_PARALLEL    = 5;           // Max concurrent getLogs requests to avoid rate-limiting
 
 // Memo event ABI
 const TRANSFER_WITH_MEMO_EVENT = {
@@ -101,40 +104,42 @@ function formatTokens(raw) {
 }
 
 /**
- * Fetch logs in parallel safe chunks within public RPC's 10,000-block limit.
+ * Fetch ALL Memo logs from DEPLOY_BLOCK to latestBlock.
+ * Splits the range into 9,900-block chunks and runs MAX_PARALLEL at a time
+ * to cover the full chain history without hitting RPC rate limits.
  */
-async function getRecentLogs(latestBlock) {
-  const chunk1From = latestBlock > CHUNK_SIZE ? latestBlock - CHUNK_SIZE : 0n;
-  const chunk2From = latestBlock > CHUNK_SIZE * 2n ? latestBlock - CHUNK_SIZE * 2n : 0n;
-  const chunk2To   = chunk1From > 0n ? chunk1From - 1n : 0n;
-
-  const promises = [
-    client.getLogs({
-      address: HEXPUNK_ADDRESS,
-      event: TRANSFER_WITH_MEMO_EVENT,
-      fromBlock: chunk1From,
-      toBlock: latestBlock,
-    }),
-  ];
-
-  if (chunk2From < chunk2To) {
-    promises.push(
-      client.getLogs({
-        address: HEXPUNK_ADDRESS,
-        event: TRANSFER_WITH_MEMO_EVENT,
-        fromBlock: chunk2From,
-        toBlock: chunk2To,
-      })
-    );
+async function getAllLogs(latestBlock) {
+  // Build the full list of chunks from deploy to now
+  const chunks = [];
+  let cur = DEPLOY_BLOCK;
+  while (cur <= latestBlock) {
+    const end = cur + CHUNK_SIZE - 1n < latestBlock ? cur + CHUNK_SIZE - 1n : latestBlock;
+    chunks.push({ from: cur, to: end });
+    cur = end + 1n;
   }
 
-  const results = await Promise.allSettled(promises);
   const logs = [];
-  for (const res of results) {
-    if (res.status === "fulfilled" && Array.isArray(res.value)) {
-      logs.push(...res.value);
+
+  // Run chunks in batches of MAX_PARALLEL to avoid rate-limiting
+  for (let i = 0; i < chunks.length; i += MAX_PARALLEL) {
+    const batch = chunks.slice(i, i + MAX_PARALLEL);
+    const results = await Promise.allSettled(
+      batch.map((c) =>
+        client.getLogs({
+          address: HEXPUNK_ADDRESS,
+          event: TRANSFER_WITH_MEMO_EVENT,
+          fromBlock: c.from,
+          toBlock: c.to,
+        })
+      )
+    );
+    for (const res of results) {
+      if (res.status === "fulfilled" && Array.isArray(res.value)) {
+        logs.push(...res.value);
+      }
     }
   }
+
   return logs;
 }
 
@@ -142,9 +147,9 @@ async function getRecentLogs(latestBlock) {
 export async function fetchChainData() {
   const latestBlock = await client.getBlockNumber();
 
-  // Parallel: event logs + contract supply + dead balance
+  // Parallel: ALL event logs (full history since deploy) + supply + dead balance
   const [logsResult, supplyResult, deadResult] = await Promise.allSettled([
-    getRecentLogs(latestBlock),
+    getAllLogs(latestBlock),
     client.readContract({
       address: HEXPUNK_ADDRESS,
       abi: STATS_ABI,
@@ -165,8 +170,11 @@ export async function fetchChainData() {
   // Calculate burned supply: (INITIAL_SUPPLY - totalSupply) + dead balance
   const burnedRaw = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
 
-  // Latest 10 scars, newest first
-  const recentLogs = [...logs].reverse().slice(0, 10);
+  // Sort by block ascending, take latest 10, display newest first
+  const sortedLogs = [...logs].sort((a, b) =>
+    a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0
+  );
+  const recentLogs = sortedLogs.slice(-10).reverse();
 
   const scars = recentLogs.map((log) => ({
     from: shortAddr(log.topics[1]),
@@ -175,7 +183,7 @@ export async function fetchChainData() {
     txHash: log.transactionHash,
   }));
 
-  // Unique wallet addresses that have inscribed a scar
+  // Unique wallet addresses that have ever inscribed a scar
   const activeCustodians = new Set(
     logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
   ).size;
@@ -188,8 +196,18 @@ export async function fetchChainData() {
   };
 }
 
+// ─── Module-level cache ───────────────────────────────────────────────────────
+// Persists across React re-mounts so the full history scan (~200 RPC calls)
+// only happens once per browser session. Subsequent polls only fetch new blocks.
+let _cachedLogs       = [];          // All Memo logs seen so far
+let _lastScannedBlock = DEPLOY_BLOCK - 1n; // Last block fully scanned
+
 // ─── React hook ──────────────────────────────────────────────────────────────
-export function useChainData() {
+/**
+ * @param {number} refreshMs  How often to re-poll for new blocks.
+ *                            Default: 20 minutes. Set to 0 to disable auto-refresh.
+ */
+export function useChainData(refreshMs = 20 * 60 * 1000) {
   const [data, setData] = useState({
     scars: [],
     totalScars: 0,
@@ -202,26 +220,93 @@ export function useChainData() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchChainData()
-      .then((result) => {
-        if (!cancelled) setData({ ...result, loading: false, error: null });
-      })
-      .catch((err) => {
+    async function poll() {
+      try {
+        const latestBlock = await client.getBlockNumber();
+
+        // Only scan blocks we haven't seen yet
+        const fromBlock = _lastScannedBlock + 1n;
+
+        let newLogs = [];
+        if (fromBlock <= latestBlock) {
+          newLogs = await getAllLogs(fromBlock, latestBlock);
+          _cachedLogs = [..._cachedLogs, ...newLogs];
+          _lastScannedBlock = latestBlock;
+        }
+
+        const logs = _cachedLogs;
+
+        // Parallel: supply + dead balance (always fresh)
+        const [supplyResult, deadResult] = await Promise.allSettled([
+          client.readContract({
+            address: HEXPUNK_ADDRESS,
+            abi: STATS_ABI,
+            functionName: "totalSupply",
+          }),
+          client.readContract({
+            address: HEXPUNK_ADDRESS,
+            abi: STATS_ABI,
+            functionName: "balanceOf",
+            args: [DEAD_ADDRESS],
+          }),
+        ]);
+
+        const currentSupply = supplyResult.status === "fulfilled" ? supplyResult.value : INITIAL_SUPPLY;
+        const deadBalance   = deadResult.status === "fulfilled"   ? deadResult.value   : 0n;
+        const burnedRaw     = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
+
+        // Sort by block, take latest 10, newest first
+        const sortedLogs = [...logs].sort((a, b) =>
+          a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0
+        );
+        const recentLogs = sortedLogs.slice(-10).reverse();
+
+        const scars = recentLogs.map((log) => ({
+          from:    shortAddr(log.topics[1]),
+          memo:    decodeBytes32(log.topics[2] ?? ""),
+          timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
+          txHash:  log.transactionHash,
+        }));
+
+        const activeCustodians = new Set(
+          logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
+        ).size;
+
+        if (!cancelled)
+          setData({
+            scars,
+            totalScars: logs.length,
+            burnedFragments: formatTokens(burnedRaw),
+            activeCustodians,
+            loading: false,
+            error: null,
+          });
+      } catch (err) {
         console.error("[useChainData]", err);
         if (!cancelled)
-          setData((prev) => ({
-            ...prev,
-            loading: false,
-            burnedFragments: "0",
-            activeCustodians: 0,
-            error: null, // Fail gracefully without breaking UI
-          }));
-      });
+          setData((prev) => ({ ...prev, loading: false, error: null }));
+      }
+    }
+
+    // Initial fetch
+    poll();
+
+    // Re-poll when user returns to this tab (e.g. after signing a tx in their wallet)
+    const onVisible = () => { if (!cancelled && document.visibilityState === "visible") poll(); };
+    document.addEventListener("visibilitychange", onVisible);
+
+    // Periodic refresh every 20 min (only fetches NEW blocks — very cheap)
+    let timer;
+    if (refreshMs > 0) {
+      timer = setInterval(() => { if (!cancelled) poll(); }, refreshMs);
+    }
 
     return () => {
       cancelled = true;
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [refreshMs]);
 
   return data;
 }
