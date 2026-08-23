@@ -60,7 +60,6 @@ const client = createPublicClient({
     http("https://mainnet.base.org"),
     http("https://base.llamarpc.com"),
     http("https://1rpc.io/base"),
-    http("https://base.meowrpc.com"),
   ]),
 });
 
@@ -104,16 +103,16 @@ function formatTokens(raw) {
 }
 
 /**
- * Fetch ALL Memo logs from DEPLOY_BLOCK to latestBlock.
+ * Fetch ALL Memo logs from fromBlock to toBlock.
  * Splits the range into 9,900-block chunks and runs MAX_PARALLEL at a time
  * to cover the full chain history without hitting RPC rate limits.
  */
-async function getAllLogs(latestBlock) {
-  // Build the full list of chunks from deploy to now
+async function getAllLogs(fromBlock, toBlock) {
+  // Build the full list of chunks from fromBlock to toBlock
   const chunks = [];
-  let cur = DEPLOY_BLOCK;
-  while (cur <= latestBlock) {
-    const end = cur + CHUNK_SIZE - 1n < latestBlock ? cur + CHUNK_SIZE - 1n : latestBlock;
+  let cur = fromBlock;
+  while (cur <= toBlock) {
+    const end = cur + CHUNK_SIZE - 1n < toBlock ? cur + CHUNK_SIZE - 1n : toBlock;
     chunks.push({ from: cur, to: end });
     cur = end + 1n;
   }
@@ -149,7 +148,7 @@ export async function fetchChainData() {
 
   // Parallel: ALL event logs (full history since deploy) + supply + dead balance
   const [logsResult, supplyResult, deadResult] = await Promise.allSettled([
-    getAllLogs(latestBlock),
+    getAllLogs(DEPLOY_BLOCK, latestBlock),
     client.readContract({
       address: HEXPUNK_ADDRESS,
       abi: STATS_ABI,
