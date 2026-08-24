@@ -472,7 +472,7 @@ export default function App() {
           <div className="relic-mech">
             <div className="relic-step">
               <div className="n">01</div>
-              <p>The resources from each Relic are encapsulated directly into the liquidity pool (LP) on Base Mainnet.</p>
+              <p>50% of the proceeds from each Relic are encapsulated directly into the $HEXPUNK liquidity pool (LP) on Base, with 50% dedicated to operational infrastructure.</p>
             </div>
             <div className="relic-step">
               <div className="n">02</div>
