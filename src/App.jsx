@@ -3,10 +3,11 @@ import { useChainData } from "./hooks/useChainData";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
 // Day 0 = Official Drop Genesis on Base Mainnet (Aug 26, 2026, 6:00 PM CST)
-const LAUNCH_DATE   = new Date("2026-08-26T18:00:00-06:00");
-const TOTAL_DAYS    = 90;
-const CONTRACT_ADDR = "0xb20000000000000000000024A9Cd928Ff6277db8";
-const NFT_ADDR      = "0xad745891c3f90d94fb68bf0656ea9ee1b5297161";
+const LAUNCH_DATE        = new Date("2026-08-26T18:00:00-06:00");
+const TOTAL_DAYS         = 90;
+const CONTRACT_ADDR      = "0xb20000000000000000000024A9Cd928Ff6277db8";
+const NFT_ADDR           = "0xad745891c3f90d94fb68bf0656ea9ee1b5297161";
+const OPENSEA_DROP_URL   = "https://opensea.io/collection/hexpunk-2026/";
 
 function calcDay() {
   const diff = Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86_400_000);
@@ -444,7 +445,7 @@ export default function App() {
 
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                 <a
-                  href={`https://basescan.org/address/${NFT_ADDR}`}
+                  href={OPENSEA_DROP_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="btn-opensea"
