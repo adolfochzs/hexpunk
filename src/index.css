@@ -267,12 +267,25 @@ h2{
 
 /* ══ RELIQUIAS ══ */
 #reliquias{ background:var(--void-2); }
-.relic-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:6px; margin-bottom:48px; max-width:640px; }
-.relic{
-  aspect-ratio:1; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-  font-family:var(--mono); font-size:10px; color:var(--ink-dim); background:var(--void);
+.relic-showcase{ display:grid; grid-template-columns:360px 1fr; gap:36px; align-items:center; margin-top:32px; background:var(--void); border:1px solid var(--line); padding:32px; }
+@media(max-width:860px){ .relic-showcase{ grid-template-columns:1fr; padding:20px; gap:24px; } }
+.relic-art-frame{ position:relative; aspect-ratio:1; overflow:hidden; border:1px solid var(--line); background:#000; }
+.relic-art-frame img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s ease; }
+.relic-art-frame:hover img{ transform:scale(1.03); }
+.relic-badge{ position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); border:1px solid var(--yellow); color:var(--yellow); font-family:var(--mono); font-size:10px; padding:4px 8px; font-weight:700; letter-spacing:0.05em; }
+.relic-info{ display:flex; flex-direction:column; gap:20px; }
+.relic-specs{ display:grid; grid-template-columns:1fr 1fr; gap:16px; font-family:var(--mono); }
+@media(max-width:540px){ .relic-specs{ grid-template-columns:1fr; } }
+.relic-spec-item .label{ color:var(--ink-dim); font-size:10px; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.05em; }
+.relic-spec-item .val{ color:var(--ink); font-size:13px; font-weight:600; font-family:var(--mono); }
+.relic-spec-item .val.highlight{ color:var(--teal); }
+.btn-opensea{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  background:var(--yellow); color:var(--void); font-family:var(--mono); font-weight:700;
+  font-size:13px; padding:14px 28px; text-decoration:none; border:none; cursor:pointer;
+  transition:all 0.2s ease; width:fit-content; letter-spacing:0.05em;
 }
-.relic.filled{ border-color:var(--yellow); color:var(--yellow); }
+.btn-opensea:hover{ background:#fff; color:var(--void); transform:translateY(-2px); box-shadow:0 8px 24px rgba(245,176,65,0.25); }
 .relic-mech{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:40px; }
 @media(max-width:820px){ .relic-mech{ grid-template-columns:1fr; } }
 .relic-step{ border-left:2px solid var(--acid); padding-left:20px; }

@@ -62,16 +62,6 @@ export default function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ── Relic grid: deterministic pseudo-random fill ─────────────────────────
-  const relics = useMemo(() => {
-    return Array.from({ length: 100 }, (_, i) => {
-      const seed = Math.sin(i + 4) * 10000;
-      return {
-        hex: i.toString(16).toUpperCase().padStart(2, "0"),
-        filled: (seed - Math.floor(seed)) < 0.34,
-      };
-    });
-  }, []);
 
   const handleScrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -422,17 +412,60 @@ export default function App() {
           <div className="eyebrow">The anchoring vehicle</div>
           <h2>Relics of Sector Zero</h2>
           <p className="lede">
-            100 NFTs (ERC-721) materializing the organism's initial liquidity pool. Each
-            Relic contains a latent residue: 1,000 $HEXPUNK automatically transferred
-            to the acquirer.
+            100 archaeological artifacts (ERC-721) on Base Mainnet materializing the organism's initial liquidity pool.
+            Each Relic holder can claim 1,000 $HEXPUNK directly on this portal.
           </p>
 
-          <div className="relic-grid">
-            {relics.map((relic, idx) => (
-              <div key={idx} className={`relic${relic.filled ? " filled" : ""}`}>
-                {relic.hex}
+          <div className="relic-showcase">
+            <div className="relic-art-frame">
+              <img src="/relic-preview.png" alt="HEXPUNK Relic Showcase" />
+              <div className="relic-badge">SECTOR ZERO · 100 PIECES</div>
+            </div>
+
+            <div className="relic-info">
+              <div className="relic-specs">
+                <div className="relic-spec-item">
+                  <div className="label">Supply Cap</div>
+                  <div className="val">100 Unique 1/1 Scars</div>
+                </div>
+                <div className="relic-spec-item">
+                  <div className="label">Network & Standard</div>
+                  <div className="val">ERC-721 · Base Mainnet</div>
+                </div>
+                <div className="relic-spec-item">
+                  <div className="label">Drop Date</div>
+                  <div className="val highlight">August 26 · 6:00 PM CST</div>
+                </div>
+                <div className="relic-spec-item">
+                  <div className="label">Custodian Reward</div>
+                  <div className="val highlight">Claim 1,000 $HEXPUNK</div>
+                </div>
               </div>
-            ))}
+
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+                <a
+                  href={`https://basescan.org/address/${NFT_ADDR}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-opensea"
+                >
+                  VIEW DROP ON OPENSEA ↗
+                </a>
+                <a
+                  href={`https://basescan.org/address/${NFT_ADDR}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: "12px",
+                    color: "var(--ink-dim)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Contract: {NFT_ADDR.slice(0, 6)}…{NFT_ADDR.slice(-4)}
+                </a>
+              </div>
+            </div>
           </div>
 
           <div className="relic-mech">
@@ -442,7 +475,7 @@ export default function App() {
             </div>
             <div className="relic-step">
               <div className="n">02</div>
-              <p>Cellular Memory Injection: the acquirer immediately receives 1,000 $HEXPUNK from the Creator's Reserve.</p>
+              <p>Cellular Memory Injection: each Relic holder can claim 1,000 $HEXPUNK on-chain from the Creator's Reserve.</p>
             </div>
             <div className="relic-step">
               <div className="n">03</div>
