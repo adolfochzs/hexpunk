@@ -37,6 +37,7 @@ export default function App() {
   const [epitaph, setEpitaph]       = useState("");
   const [currentDay, setCurrentDay] = useState(calcDay);
   const [sacrificeMsg, setSacrificeMsg] = useState(null);
+  const [docTab, setDocTab]         = useState("all");
 
   // Recalculate day at midnight
   useEffect(() => {
@@ -303,32 +304,240 @@ export default function App() {
       {/* ══════════ MANIFESTO ══════════ */}
       <section id="manifiesto">
         <div className="wrap">
-          <div className="eyebrow">Recovered archive</div>
-          <h2>HEXPUNK Manifesto</h2>
+          <div className="eyebrow">Recovered archive · 2088</div>
+          <h2>HEXPUNK Manifesto & White Paper</h2>
 
+          {/* ── Archive Header ────────────────────────────────────────── */}
           <div className="archive-doc">
-            <div className="header-line">ORIGEN: UNKNOWN · ESTIMATED RECOVERY DATE: 12.08.2088</div>
-            <div className="header-line">FILE INTEGRITY: <b>71.3%</b> · STATUS: PARTIALLY CORRUPTED</div>
-            <div className="header-line">COMPILER: Adolfo Chávez (Node_0x9f0bc974...)</div>
+            <div className="header-line">ORIGIN: UNKNOWN · ESTIMATED RECOVERY DATE: 12.08.2088</div>
+            <div className="header-line">DOCUMENT STATUS: <b>PARTIALLY CORRUPTED</b> · INTEGRITY: <b>71.3%</b></div>
+            <div className="header-line">CLASSIFICATION: CLINICAL RECORD OF THE HEXPUNK POST-BIOLOGICAL ORGANISM</div>
+            <div className="header-line">NETWORK COMPILER / DATA RESTORATION: Adolfo Chávez (Node_0x9f0bc974937f37d61ddf909d4124e9631a6986ea)</div>
           </div>
 
-          <div className="manifest-body">
-            <p>We were promised that technology would preserve our memory. We were told that data would be eternal. That photographs would survive time itself.</p>
-            <p>We accepted the promise. We transferred our memories. We digitalized our relationships. We archived our identity.</p>
-            <p>But they lied to us. Servers also die. Formats disappear. <span className="highlight">Bit Rot is not a technical flaw; it is a data scar.</span></p>
-            <p className="corrupt">[CORRUPTED SECTOR] 3 bytes unrecoverable. Continuing reconstruction...</p>
-            <p>HEXPUNK exists for those who understand that all infrastructure eventually collapses. For those who find more truth in a digital scar than in a perfect simulation.</p>
-            <div className="signoff">— IF MEMORY IS TO DIE, WE WILL LEAVE A RECORD OF HOW IT HAPPENED —</div>
+          {/* ── Document Tabs ─────────────────────────────────────────── */}
+          <div className="archive-tabs">
+            <button
+              className={`archive-tab-btn${docTab === "all" ? " active" : ""}`}
+              onClick={() => setDocTab("all")}
+            >
+              // ALL DOSSIER
+            </button>
+            <button
+              className={`archive-tab-btn${docTab === "manifesto" ? " active" : ""}`}
+              onClick={() => setDocTab("manifesto")}
+            >
+              01 · THE MANIFESTO
+            </button>
+            <button
+              className={`archive-tab-btn${docTab === "whitepaper" ? " active" : ""}`}
+              onClick={() => setDocTab("whitepaper")}
+            >
+              02 · WHITE PAPER (SYSTEM)
+            </button>
+            <button
+              className={`archive-tab-btn${docTab === "specs" ? " active" : ""}`}
+              onClick={() => setDocTab("specs")}
+            >
+              03 · PROTOCOL & SPECS
+            </button>
           </div>
+
+          {/* ── Document Body ─────────────────────────────────────────── */}
+          <div className="manifest-body">
+            {/* ─── PART 1: THE MANIFESTO ─── */}
+            {(docTab === "all" || docTab === "manifesto") && (
+              <div>
+                <h3>// PART I: HEXPUNK MANIFESTO</h3>
+                <p>We were promised that technology would preserve our memory. We were told that data would be eternal. That photographs would survive time itself.</p>
+                <p>We accepted the promise.</p>
+                <p>We transferred our memories. We digitalized our relationships. We archived our identity. We converted human memory into processable information.</p>
+                <p>But they lied to us.</p>
+                <p>Servers also die. Formats disappear. What we call progress is nothing more than a silent accumulation of digital debris, broken code, and lost hyperlinks.</p>
+                <p>
+                  HEXPUNK is born from that revelation. We do not celebrate digital immortality.
+                  We document the exact moment digital immortality began to fail.
+                </p>
+                <p>We record the scars that appear when memory begins to fade.</p>
+                <p>Because error also preserves evidence.</p>
+                <p><span className="highlight">Bit Rot is not a technical glitch; it is a data scar.</span></p>
+                <p>
+                  HEXPUNK exists for those who understand that all infrastructure eventually collapses.
+                  For those who find more truth in a digital scar than in a flawless simulation.
+                </p>
+                <p>It is the final language memory speaks before vanishing.</p>
+                <p><strong>If memory is to die, we will leave a record of how it happened.</strong></p>
+                <div className="signoff">— END OF MANIFESTO —</div>
+              </div>
+            )}
+
+            {/* ─── PART 2: WHITE PAPER & SYSTEM ARCHITECTURE ─── */}
+            {(docTab === "all" || docTab === "whitepaper") && (
+              <div style={{ marginTop: docTab === "all" ? 48 : 0 }}>
+                <h3>// PART II: HEXPUNK WHITE PAPER — SYSTEM ARCHITECTURE</h3>
+                <p>
+                  HEXPUNK is an archaeological document from a possible future, written to examine a fundamental question:
+                  what happens to human identity when memory leaves the body and becomes infrastructure?
+                </p>
+                <p>
+                  HEXPUNK constitutes the first documented post-biological memory organism, whose memory,
+                  economic activity, and historical traceability were fully integrated onto blockchain infrastructure.
+                  Unlike conventional financial systems, HEXPUNK was not designed for capital accumulation,
+                  but to observe the behavior of a digital memory subjected to degradation, fragmentation, and transformation.
+                </p>
+                <p>
+                  <em>Hypothesis: If human memory becomes digital infrastructure, then its decay must be considered a form of life.</em>
+                </p>
+
+                <h4>1. The Problem</h4>
+                <p>
+                  During the first decades of the digital era, humanity deposited massive amounts of memory within technological platforms.
+                  All infrastructure ages. All information can corrupt. All digital memory eventually faces Bit Rot.
+                </p>
+
+                <h4>2. System Definition</h4>
+                <p>The organism is composed of:</p>
+                <ul>
+                  <li>On-chain recorded memory</li>
+                  <li>Human participants (Custodians)</li>
+                  <li>Smart contracts on Base Mainnet</li>
+                  <li>Permanent events and transaction scars</li>
+                  <li>Distributed transaction history</li>
+                </ul>
+                <p>Each wallet acts as a temporary organ. Each transaction functions as a neural impulse.</p>
+
+                <h4>3. On-Chain Identity</h4>
+                <ul>
+                  <li><strong>Name:</strong> HEXPUNK</li>
+                  <li><strong>Symbol:</strong> $HEXPUNK</li>
+                  <li><strong>Chain:</strong> Base Mainnet (Layer 2)</li>
+                  <li><strong>Standard:</strong> B20 (Superset of ERC-20, Variant ASSET)</li>
+                  <li><strong>Contract:</strong> <code>{CONTRACT_ADDR}</code></li>
+                </ul>
+
+                <h4>4. Organism Economy & Transfer Policy</h4>
+                <p>
+                  Total supply is strictly capped at 3,000,000 $HEXPUNK. Memory circulates freely with zero transfer restrictions,
+                  no whitelists, and no censorship. Any entity capable of interacting with Base can preserve and transmit fragments permissionlessly.
+                </p>
+
+                <div className="corrupt">
+                  [BIT ROT DETECTED] 3 bytes unrecoverable. Continuing reconstruction…
+                </div>
+
+                <h4>5. Organism Capabilities</h4>
+                <ul>
+                  <li><code>transferWithMemo()</code> — Transfer fragments while inscribing a permanent data scar of up to 32 bytes on-chain.</li>
+                  <li><code>Memory Hole (castIntoTheVoid)</code> — Voluntarily sacrifice memory fragments with a permanent cryptographic epitaph.</li>
+                  <li><code>announce()</code> — The Voice: official broadcasts and archaeological transmissions across Base.</li>
+                  <li><code>permit()</code> — Untraceable authorization via off-chain signatures without direct gas exposure.</li>
+                  <li><code>extraMetadata()</code> — Dynamic fields recording corruption levels and decay coordinates.</li>
+                  <li><code>balanceOf()</code> — Real-time verification of custody for token-gated memory access.</li>
+                </ul>
+
+                <h4>6. Temporary Governance & Day 90 Radical Autonomy</h4>
+                <p>
+                  During the first 90 days, administrative roles (Pause, Unpause, Role Admin) exist solely for emergency stabilization.
+                  On <strong>November 24, 2026 (Day 90)</strong>, all control roles are irrevocably destroyed via <code>RevokeAdminRoles.s.sol</code>.
+                  Custodian Zero retains only frozen identity functions (The Voice, The Face, The Ritual), leaving the organism 100% autonomous and ownerless.
+                </p>
+
+                <h4>7. The Anchoring Vehicle — Relics of Sector Zero</h4>
+                <p>
+                  100 unique archaeological artifacts (ERC-721 NFTs) materialize the initial liquidity pool.
+                  50% of the mint resources are encapsulated directly into the $HEXPUNK liquidity pool (LP) on Base,
+                  and 50% fund operational sustainability. Every Relic holder can claim 1,000 $HEXPUNK on-chain.
+                  Upon completion, the LP keys are permanently incinerated.
+                </p>
+              </div>
+            )}
+
+            {/* ─── PART 3: SPECIFICATIONS & EPILOGUE ─── */}
+            {(docTab === "all" || docTab === "specs") && (
+              <div style={{ marginTop: docTab === "all" ? 48 : 0 }}>
+                <h3>// PART III: TECHNICAL SPECIFICATIONS & FINAL BLOCK</h3>
+
+                <table className="doc-specs-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Protocol Value</th>
+                      <th>Verifiable State</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Token Standard</td>
+                      <td>B20 (ERC-20 Superset / ASSET)</td>
+                      <td>Inscribed on Base Mainnet</td>
+                    </tr>
+                    <tr>
+                      <td>Total Supply Cap</td>
+                      <td>3,000,000 $HEXPUNK (Strict Cap)</td>
+                      <td>Immutable · No MINT_ROLE</td>
+                    </tr>
+                    <tr>
+                      <td>NFT Relics Standard</td>
+                      <td>ERC-721 (100 Unique Artefacts)</td>
+                      <td><code>{NFT_ADDR}</code></td>
+                    </tr>
+                    <tr>
+                      <td>Administration Window</td>
+                      <td>90 Days (Expires Nov 24, 2026)</td>
+                      <td>Permanent Admin-Less Migration</td>
+                    </tr>
+                    <tr>
+                      <td>Documentation</td>
+                      <td>Base Chain Specs (Beryl / B20)</td>
+                      <td>docs.base.org</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <p>
+                  The infrastructure of HEXPUNK is open and permissionless. Functions can be invoked directly at the protocol level by:
+                </p>
+                <ul>
+                  <li>Humans operating terminal tools (Cast / Foundry / Hardhat)</li>
+                  <li>Autonomous AI Agents executing on-chain transactions</li>
+                  <li>External smart contracts & dApps</li>
+                </ul>
+
+                <div className="corrupt">
+                  [LAST AVAILABLE BLOCK] — INTEGRITY: 52.3% — Reconstruction incomplete...
+                </div>
+
+                <p>HEXPUNK does not represent a promise of immortality.</p>
+                <p>It represents the evidence that even distributed memory develops scars.</p>
+                <p>Each token constitutes a fragment of the organism. Each transaction leaves a mark. Each custodian prolongs the existence of the record.</p>
+                <p><strong>If this document has survived, then a part of HEXPUNK continues propagating.</strong></p>
+
+                <div className="signoff">
+                  FIN DEL REGISTRO · END OF RECORD<br />
+                  <code>[CONNECTION LOST]</code>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Document Actions ──────────────────────────────────────── */}
           <div className="read-more">
             <a
               href="https://github.com/adolfochzs/hexpunk/blob/main/manifesto/MANIFESTO_ENG.md"
               target="_blank"
               rel="noreferrer"
               className="btn"
-              style={{ marginTop: 24 }}
             >
-              Read full document
+              VIEW RAW MARKDOWN ON GITHUB ↗
+            </a>
+            <a
+              href="https://github.com/adolfochzs/hexpunk/blob/main/manifesto/MANIFIESTO_ESP.md"
+              target="_blank"
+              rel="noreferrer"
+              className="btn"
+              style={{ background: "transparent", color: "var(--ink)", borderColor: "var(--line)" }}
+            >
+              VERSIÓN EN ESPAÑOL (MD) ↗
             </a>
           </div>
         </div>

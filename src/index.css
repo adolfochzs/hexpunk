@@ -228,17 +228,63 @@ h2{
 }
 .archive-doc .header-line{ margin-bottom:4px; }
 .archive-doc .header-line b{ color:var(--acid); }
-.manifest-body{
-  border:1px solid var(--line); border-top:none; padding:56px;
-  font-family:var(--body); font-size:17px; line-height:1.9; color:var(--ink);
+
+.archive-tabs{
+  display:flex; flex-wrap:wrap; gap:1px; background:var(--line);
+  border-left:1px solid var(--line); border-right:1px solid var(--line);
 }
-.manifest-body p{ margin-bottom:24px; }
+.archive-tab-btn{
+  flex:1; min-width:140px; background:var(--void); border:none; color:var(--ink-dim);
+  font-family:var(--mono); font-size:11px; font-weight:700; padding:14px 16px;
+  cursor:pointer; transition:all 0.2s ease; letter-spacing:0.05em; text-align:center;
+}
+.archive-tab-btn:hover{ color:var(--ink); background:rgba(255,255,255,0.02); }
+.archive-tab-btn.active{
+  background:var(--void-2); color:var(--teal); border-bottom:2px solid var(--teal);
+}
+
+.manifest-body{
+  border:1px solid var(--line); border-top:none; padding:48px;
+  font-family:var(--body); font-size:16.5px; line-height:1.85; color:var(--ink);
+  background:var(--void);
+}
+@media(max-width:768px){ .manifest-body{ padding:24px; font-size:15px; } }
+
+.manifest-body p{ margin-bottom:20px; }
+.manifest-body h3{
+  font-family:var(--mono); font-size:16px; color:var(--teal); margin:36px 0 16px 0;
+  letter-spacing:0.05em; text-transform:uppercase; display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid var(--line); padding-bottom:8px;
+}
+.manifest-body h4{
+  font-family:var(--mono); font-size:13.5px; color:var(--yellow); margin:24px 0 10px 0;
+  letter-spacing:0.03em;
+}
+.manifest-body ul{ margin:0 0 24px 20px; color:var(--ink-dim); font-size:15px; }
+.manifest-body li{ margin-bottom:8px; }
 .manifest-body .corrupt{
-  color:var(--magenta); font-family:var(--mono); font-size:13px; letter-spacing:0.02em;
+  color:var(--magenta); font-family:var(--mono); font-size:12px; letter-spacing:0.04em;
+  background:rgba(255,0,85,0.05); border-left:3px solid var(--magenta); padding:10px 14px;
+  margin:24px 0;
 }
 .manifest-body .highlight{ color:var(--yellow); }
-.manifest-body .signoff{ font-family:var(--mono); font-size:13px; color:var(--ink-dim); margin-top:40px; text-align:center; letter-spacing:0.1em; }
-.read-more{ text-align:center; margin-top:8px; }
+.manifest-body .signoff{
+  font-family:var(--mono); font-size:12px; color:var(--ink-dim); margin-top:40px;
+  text-align:center; letter-spacing:0.1em; padding-top:24px; border-top:1px dashed var(--line);
+}
+.doc-specs-table{
+  width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; margin:24px 0;
+}
+.doc-specs-table th{
+  text-align:left; padding:10px 14px; color:var(--ink-dim); font-size:10.5px;
+  border-bottom:1px solid var(--line); text-transform:uppercase;
+}
+.doc-specs-table td{ padding:10px 14px; border-bottom:1px solid var(--line); }
+.doc-specs-table tr:last-child td{ border-bottom:none; }
+
+.read-more{
+  display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:24px;
+}
 
 /* ══ TOKENOMICS ══ */
 .tokeno-grid{ display:grid; grid-template-columns:1.1fr 1fr; gap:56px; }
