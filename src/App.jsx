@@ -42,6 +42,7 @@ export default function App() {
   const [currentDay, setCurrentDay] = useState(calcDay);
   const [sacrificeMsg, setSacrificeMsg] = useState(null);
   const [docTab, setDocTab]         = useState("all");
+  const [isDossierExpanded, setIsDossierExpanded] = useState(false);
 
   const handleSetLang = (newLang) => {
     setLang(newLang);
@@ -395,7 +396,7 @@ export default function App() {
           </div>
 
           {/* ── Document Body ─────────────────────────────────────────── */}
-          <div className="manifest-body">
+          <div className={`manifest-body${isDossierExpanded ? " expanded" : ""}`}>
             {/* ─── PART 1: THE MANIFESTO ─── */}
             {(docTab === "all" || docTab === "manifesto") && (
               <div>
@@ -533,25 +534,23 @@ export default function App() {
             )}
           </div>
 
-          {/* ── Document Actions ──────────────────────────────────────── */}
-          <div className="read-more">
-            <a
-              href="https://github.com/adolfochzs/hexpunk/blob/main/manifesto/MANIFESTO_ENG.md"
-              target="_blank"
-              rel="noreferrer"
-              className="btn"
+          {/* ── Dossier Expand / Scroll Control Bar ──────────────────── */}
+          <div className="dossier-expand-bar">
+            <span style={{ color: "var(--ink-dim)" }}>
+              {isDossierExpanded
+                ? (lang === "es" ? "MODO EXPANDIDO // VISTA COMPLETA" : "EXPANDED MODE // FULL VIEW")
+                : (lang === "es" ? "VISTA COMPACTA // DESPLAZA PARA LEER" : "SCROLL INSIDE BOX OR EXPAND")
+              }
+            </span>
+            <button
+              className="dossier-expand-btn"
+              onClick={() => setIsDossierExpanded((prev) => !prev)}
             >
-              {t.manifesto.btnGithubRaw}
-            </a>
-            <a
-              href="https://github.com/adolfochzs/hexpunk/blob/main/manifesto/MANIFIESTO_ESP.md"
-              target="_blank"
-              rel="noreferrer"
-              className="btn"
-              style={{ background: "transparent", color: "var(--ink)", borderColor: "var(--line)" }}
-            >
-              {t.manifesto.btnEspMarkdown}
-            </a>
+              {isDossierExpanded
+                ? (lang === "es" ? "⛶ COLAPSAR EXPEDIENTE" : "⛶ COLLAPSE DOSSIER")
+                : (lang === "es" ? "⛶ EXPANDIR EXPEDIENTE" : "⛶ EXPAND DOSSIER")
+              }
+            </button>
           </div>
         </div>
       </section>
