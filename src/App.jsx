@@ -404,6 +404,39 @@ export default function App() {
               </p>
             </div>
           </div>
+
+          {/* ── Anti-Rug & Immutability Guarantee ──────────────────────── */}
+          <div className="tokeno-guarantee">
+            <div className="guarantee-badge">IMMUTABILITY & TRUST PROTOCOL</div>
+            <p className="guarantee-quote">
+              “Once the anchoring is complete, the liquidity pool keys will be permanently incinerated.
+              The energy deposited by collectors will remain fused into the network, ensuring the perpetual
+              existence, immutable transparency, and free circulation of the organism.”
+            </p>
+            <div className="guarantee-pillars">
+              <div className="pillar">
+                <span className="icon">🛡️</span>
+                <div>
+                  <strong>STRICT SUPPLY CAP</strong>
+                  <p>Supply strictly capped at 3,000,000 $HEXPUNK. No more tokens can ever be minted.</p>
+                </div>
+              </div>
+              <div className="pillar">
+                <span className="icon">🔥</span>
+                <div>
+                  <strong>LP KEYS INCINERATED</strong>
+                  <p>Initial DEX liquidity pool keys permanently burned. Mathematically impossible to rug pull.</p>
+                </div>
+              </div>
+              <div className="pillar">
+                <span className="icon">⏳</span>
+                <div>
+                  <strong>DAY 90 AUTONOMY</strong>
+                  <p>All admin keys revoked on Day 90. The organism becomes 100% ownerless and permanent.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
