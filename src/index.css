@@ -81,6 +81,78 @@ body::before{
 }
 #integrity-readout span{ color:var(--acid); }
 
+/* ══ WALLET BUTTON ══ */
+.btn-wallet{
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  letter-spacing:0.08em; padding:5px 12px; cursor:pointer;
+  background:rgba(9,9,11,0.85); border:1px solid var(--purple);
+  color:var(--purple); backdrop-filter:blur(6px);
+  transition:all 0.2s ease;
+}
+.btn-wallet:hover{ background:var(--purple); color:var(--void); }
+.btn-wallet.connected{
+  border-color:var(--teal); color:var(--teal);
+}
+.btn-wallet.connected:hover{ background:var(--teal); color:var(--void); }
+
+/* Connector dropdown menu */
+.connector-menu{
+  position:absolute; top:calc(100% + 6px); right:0;
+  background:rgba(15,15,19,0.98); border:1px solid var(--purple);
+  backdrop-filter:blur(12px); min-width:180px; z-index:2000;
+  display:flex; flex-direction:column;
+}
+.connector-item{
+  font-family:var(--mono); font-size:11px; font-weight:600;
+  color:var(--ink-dim); background:transparent; border:none;
+  border-bottom:1px solid var(--line); padding:10px 14px;
+  text-align:left; cursor:pointer; letter-spacing:0.05em;
+  transition:all 0.15s ease;
+}
+.connector-item:last-child{ border-bottom:none; }
+.connector-item:hover{ background:var(--purple); color:var(--void); }
+
+/* ══ WALLET GATE (when not connected) ══ */
+.wallet-gate{
+  display:flex; flex-direction:column; align-items:flex-start; gap:12px;
+  padding:16px; border:1px dashed var(--line); margin-bottom:12px;
+}
+.wallet-gate span{ font-family:var(--mono); font-size:11px; color:var(--ink-dim); }
+
+/* ══ RITUAL STATUS MESSAGES ══ */
+.ritual-status{
+  font-family:var(--mono); font-size:12px; padding:12px 14px;
+  border:1px solid; display:flex; flex-direction:column; gap:8px;
+  margin-top:12px; line-height:1.5;
+}
+.ritual-status.pending{ border-color:var(--yellow); color:var(--yellow); }
+.ritual-status.ok{ border-color:var(--acid); color:var(--acid); }
+.ritual-status.error{ border-color:var(--magenta); color:var(--magenta); }
+
+/* Spinner using the ⬡ glyph */
+.tx-spinner{
+  display:inline-block;
+  animation: spin-hex 1s linear infinite;
+}
+@keyframes spin-hex{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
+
+.tx-link{
+  font-family:var(--mono); font-size:11px; color:var(--acid);
+  text-decoration:underline; text-underline-offset:3px;
+}
+.btn-reset, .btn-switch{
+  font-family:var(--mono); font-size:10px; font-weight:700;
+  color:var(--ink-dim); background:transparent;
+  border:1px solid var(--line); padding:4px 10px;
+  cursor:pointer; letter-spacing:0.06em; align-self:flex-start;
+  transition:all 0.15s ease;
+}
+.btn-reset:hover, .btn-switch:hover{ border-color:var(--teal); color:var(--teal); }
+
+
 section{ position:relative; padding:120px 24px; }
 .wrap{ max-width:1080px; margin:0 auto; }
 .eyebrow{

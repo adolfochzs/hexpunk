@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useChainData } from "./hooks/useChainData";
+import { useWallet } from "./hooks/useWallet";
+import { useMemoryHole } from "./hooks/useMemoryHole";
 import { translations } from "./translations";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
@@ -7,7 +9,8 @@ import { translations } from "./translations";
 const LAUNCH_DATE        = new Date("2026-08-26T18:00:00-06:00");
 const TOTAL_DAYS         = 90;
 const CONTRACT_ADDR      = "0xb20000000000000000000024A9Cd928Ff6277db8";
-const NFT_ADDR           = "0xad745891c3f90d94fb68bf0656ea9ee1b5297161";
+const NFT_ADDR           = "0xad745891c3f90D94fB68bf0656Ea9EE1B5297161";
+const MEMORY_HOLE_ADDR   = "0x31605c0d4729B82D7C61039ccab06b53278d7E6E"; // Deployed & verified Aug 2026
 const OPENSEA_DROP_URL   = "https://opensea.io/collection/hexpunk-2026/";
 
 function calcDay() {
@@ -40,9 +43,14 @@ export default function App() {
   const [fragments, setFragments]   = useState("");
   const [epitaph, setEpitaph]       = useState("");
   const [currentDay, setCurrentDay] = useState(calcDay);
-  const [sacrificeMsg, setSacrificeMsg] = useState(null);
   const [docTab, setDocTab]         = useState("all");
   const [isDossierExpanded, setIsDossierExpanded] = useState(false);
+  const [showConnectors, setShowConnectors] = useState(false);
+  const [isSubmitting, setIsSubmitting]     = useState(false); // lock inmediato al click
+
+  // ── Wallet & Memory Hole ──────────────────────────────────────────────────
+  const wallet     = useWallet();
+  const memoryHole = useMemoryHole();
 
   const handleSetLang = (newLang) => {
     setLang(newLang);
@@ -123,6 +131,45 @@ export default function App() {
             >
               ES
             </button>
+          </div>
+
+          {/* ── Wallet Button ── */}
+          <div style={{ position: "relative" }}>
+            {!wallet.isConnected ? (
+              <>
+                <button
+                  id="btn-connect-wallet"
+                  className="btn-wallet"
+                  onClick={() => setShowConnectors((v) => !v)}
+                >
+                  {wallet.isConnecting ? "CONNECTING…" : (lang === "es" ? "CONECTAR WALLET" : "CONNECT WALLET")}
+                </button>
+                {showConnectors && (
+                  <div className="connector-menu">
+                    {wallet.connectors.map((c) => (
+                      <button
+                        key={c.uid}
+                        className="connector-item"
+                        onClick={() => { wallet.connect(c); setShowConnectors(false); }}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <button
+                id="btn-wallet-connected"
+                className="btn-wallet connected"
+                onClick={wallet.disconnect}
+                title={wallet.address}
+              >
+                {wallet.isWrongNetwork
+                  ? "⚠ WRONG NETWORK"
+                  : `${wallet.address?.slice(0, 6)}…${wallet.address?.slice(-4)}`}
+              </button>
+            )}
           </div>
 
           <div id="integrity-readout">
@@ -297,38 +344,99 @@ export default function App() {
                   {epitaph.length} / 32
                 </div>
               </div>
-              <button
-                className="btn-burn"
-                disabled={!fragments || !epitaph}
-                onClick={() => {
-                  const amt  = parseFloat(fragments);
-                  if (isNaN(amt) || amt <= 0) { setSacrificeMsg({ type: "error", text: t.memoryHole.errorAmount }); return; }
-                  if (!epitaph.trim()) { setSacrificeMsg({ type: "error", text: t.memoryHole.errorEpitaph }); return; }
-                  const bytes  = new TextEncoder().encode(epitaph.slice(0, 32));
-                  const padded = Array.from({ length: 32 }, (_, i) => (bytes[i] ?? 0).toString(16).padStart(2, "0")).join("");
-                  const bytes32 = "0x" + padded;
-                  const rawAmt  = BigInt(Math.floor(amt * 1e18)).toString();
-                  const cmd = `cast send ${CONTRACT_ADDR} "burnWithMemo(uint256,bytes32)" ${rawAmt} ${bytes32} --rpc-url $RPC_URL --private-key $PRIVATE_KEY`;
-                  setSacrificeMsg({ type: "cmd", text: cmd });
-                }}
-              >
-                {t.memoryHole.btnBurn}
-              </button>
-              {sacrificeMsg && (
-                <div style={{
-                  marginTop: 12,
-                  padding: "12px 14px",
-                  border: `1px solid ${sacrificeMsg.type === "error" ? "var(--magenta)" : "var(--acid)"}`,
-                  fontFamily: "var(--mono)",
-                  fontSize: 11,
-                  color: sacrificeMsg.type === "error" ? "var(--magenta)" : "var(--acid)",
-                  lineHeight: 1.6,
-                  wordBreak: "break-all",
-                }}>
-                  {sacrificeMsg.type === "cmd" ? (
-                    <><b>{t.memoryHole.terminalRun}</b><br />{sacrificeMsg.text}</>
-                  ) : sacrificeMsg.text}
+              {/* ── Wallet required gate ── */}
+              {!wallet.isConnected && (
+                <div className="wallet-gate">
+                  <span>{lang === "es" ? "Conecta tu wallet para ejecutar el ritual" : "Connect your wallet to execute the ritual"}</span>
+                  <button
+                    className="btn-burn"
+                    onClick={() => setShowConnectors(true)}
+                  >
+                    {lang === "es" ? "CONECTAR WALLET" : "CONNECT WALLET"}
+                  </button>
                 </div>
+              )}
+
+              {wallet.isWrongNetwork && (
+                <div className="ritual-status error">
+                  ⚠ {lang === "es" ? "Cambia a Base Mainnet en tu wallet" : "Switch to Base Mainnet in your wallet"}
+                  <button className="btn-switch" onClick={wallet.ensureBase}>
+                    {lang === "es" ? "Cambiar a Base" : "Switch to Base"}
+                  </button>
+                </div>
+              )}
+
+              {/* ── Burn button (real tx) ── */}
+              {wallet.isConnected && !wallet.isWrongNetwork && (
+                <>
+                  {memoryHole.step === "idle" || memoryHole.step === "error" ? (
+                    <button
+                      className="btn-burn"
+                      disabled={
+                        !fragments ||
+                        !epitaph ||
+                        isSubmitting ||
+                        (memoryHole.step !== "idle" && memoryHole.step !== "error")
+                      }
+                      onClick={async () => {
+                        const amt = parseFloat(fragments);
+                        if (isNaN(amt) || amt <= 0) return;
+                        if (!epitaph.trim()) return;
+                        setIsSubmitting(true);  // bloquea el botón de inmediato
+                        memoryHole.reset();
+                        await memoryHole.sacrifice(fragments, epitaph);
+                        setIsSubmitting(false); // desbloquea cuando termina
+                      }}
+                    >
+                      {t.memoryHole.btnBurn}
+                    </button>
+                  ) : null}
+
+                  {/* Step indicator */}
+                  {memoryHole.step === "approving" && (
+                    <div className="ritual-status pending">
+                      <span className="tx-spinner">⬡</span>
+                      {lang === "es" ? "Paso 1/2 — Confirma el permiso en tu wallet…" : "Step 1/2 — Confirm approval in your wallet…"}
+                    </div>
+                  )}
+                  {memoryHole.step === "approved" && (
+                    <div className="ritual-status ok">
+                      ✓ {lang === "es" ? "Permiso otorgado — preparando el ritual…" : "Approval granted — preparing ritual…"}
+                    </div>
+                  )}
+                  {memoryHole.step === "burning" && (
+                    <div className="ritual-status pending">
+                      <span className="tx-spinner">⬡</span>
+                      {lang === "es" ? "Paso 2/2 — Confirma el sacrificio en tu wallet…" : "Step 2/2 — Confirm the sacrifice in your wallet…"}
+                    </div>
+                  )}
+                  {memoryHole.step === "done" && (
+                    <div className="ritual-status ok">
+                      ✓ {lang === "es" ? "Memoria destruida. El epitafio es permanente." : "Memory destroyed. The epitaph is permanent."}
+                      {memoryHole.burnTxHash && (
+                        <a
+                          href={`https://basescan.org/tx/${memoryHole.burnTxHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tx-link"
+                        >
+                          {lang === "es" ? "Ver en Basescan →" : "View on Basescan →"}
+                        </a>
+                      )}
+                      <button className="btn-reset" onClick={() => { memoryHole.reset(); setFragments(""); setEpitaph(""); }}>
+                        {lang === "es" ? "Nuevo ritual" : "New ritual"}
+                      </button>
+                    </div>
+                  )}
+                  {memoryHole.step === "error" && (
+                    <div className="ritual-status error">
+                      ✗ {memoryHole.errorMsg}
+                      <button className="btn-reset" onClick={memoryHole.reset}>
+                        {lang === "es" ? "Reintentar" : "Try again"}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
               <div className="ritual-warn">
                 {t.memoryHole.warn}
