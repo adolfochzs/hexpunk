@@ -1,6 +1,12 @@
-import { http, createConfig } from "wagmi";
+import { http, createConfig, fallback } from "wagmi";
 import { base } from "wagmi/chains";
 import { injected, walletConnect, coinbaseWallet } from "@wagmi/connectors";
+
+// ─── RPC endpoints ────────────────────────────────────────────────────────────
+const ALCHEMY_KEY  = import.meta.env.VITE_ALCHEMY_KEY || "";
+const ALCHEMY_URL  = ALCHEMY_KEY
+  ? `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : null;
 
 // ─── WalletConnect Project ID ──────────────────────────────────────────────────
 // Get one free at https://cloud.walletconnect.com
@@ -9,7 +15,9 @@ const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID || "";
 export const wagmiConfig = createConfig({
   chains: [base],
   transports: {
-    [base.id]: http("https://mainnet.base.org"),
+    [base.id]: ALCHEMY_URL
+      ? fallback([http(ALCHEMY_URL), http("https://mainnet.base.org")])
+      : http("https://mainnet.base.org"),
   },
   connectors: [
     // MetaMask & browser injected wallets (highest priority)

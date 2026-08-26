@@ -17,14 +17,27 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       connect-src 'self'
         https://mainnet.base.org
+        https://*.g.alchemy.com
+        https://base-mainnet.g.alchemy.com
         https://api.basescan.org
         https://basescan.org
         wss://mainnet.base.org
+        wss://*.g.alchemy.com
         https://www.google-analytics.com
         https://analytics.google.com
-        https://*.google-analytics.com;
+        https://*.google-analytics.com
+        https://base.llamarpc.com
+        https://1rpc.io
+        https://*.walletconnect.com
+        wss://*.walletconnect.com
+        https://*.walletconnect.org
+        wss://*.walletconnect.org
+        https://keys.coinbase.com
+        https://api.developer.coinbase.com
+        wss://www.walletlink.org;
       img-src 'self' data: https:;
       font-src 'self' data: https://fonts.gstatic.com;
+      frame-src https://keys.coinbase.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
