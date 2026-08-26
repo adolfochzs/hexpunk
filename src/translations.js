@@ -178,6 +178,16 @@ export const translations = {
       step1: "50% of the proceeds from each Relic are encapsulated directly into the $HEXPUNK liquidity pool (LP) on Base, with 50% dedicated to operational infrastructure.",
       step2: "Cellular Memory Injection: each Relic holder can claim 1,000 $HEXPUNK on-chain from the Creator's Reserve.",
       step3: "Upon completing the anchoring, the keys to the pool are permanently incinerated. The organism remains fused to the network.",
+      claimCard: {
+        title: "CLAIM CUSTODIAN REWARD",
+        subtitle: "Each Relic NFT holder receives 1,000 $HEXPUNK directly on-chain.",
+        tokenLabel: "Relic Token ID(s)",
+        tokenPlaceholder: "e.g. 1 or 1, 2, 5",
+        btnClaim: "CLAIM REWARD (1,000 $HEXPUNK / NFT)",
+        connectPrompt: "Connect wallet to claim reward",
+        claimSuccess: "Reward claimed successfully! Tokens transferred to your wallet.",
+        contractVerified: "Claim Contract:",
+      },
     },
     security: {
       badge: "ON-CHAIN SECURITY GUARANTEE",
@@ -375,6 +385,16 @@ export const translations = {
       step1: "El 50% de los recursos obtenidos por cada Reliquia se encapsulan directamente en la piscina de liquidez ($HEXPUNK LP) en Base, y el 50% se dedica a la infraestructura operativa.",
       step2: "Inyección de Memoria Celular: cada poseedor de una Reliquia puede reclamar 1,000 $HEXPUNK on-chain desde la Reserva del Creador.",
       step3: "Una vez completado el anclaje, las llaves de la piscina de liquidez serán incineradas permanentemente. El organismo queda fundido a la red.",
+      claimCard: {
+        title: "RECLAMAR RECOMPENSA DE CUSTODIO",
+        subtitle: "Cada poseedor de una Reliquia NFT recibe 1,000 $HEXPUNK directamente on-chain.",
+        tokenLabel: "ID(s) de Token de la Reliquia",
+        tokenPlaceholder: "ej. 1 o 1, 2, 5",
+        btnClaim: "RECLAMAR RECOMPENSA (1,000 $HEXPUNK / NFT)",
+        connectPrompt: "Conecta tu wallet para reclamar recompensa",
+        claimSuccess: "¡Recompensa reclamada con éxito! Tokens transferidos a tu wallet.",
+        contractVerified: "Contrato de Reclamo:",
+      },
     },
     security: {
       badge: "GARANTÍA DE SEGURIDAD ON-CHAIN",

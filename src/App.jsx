@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useChainData } from "./hooks/useChainData";
 import { useWallet } from "./hooks/useWallet";
 import { useMemoryHole } from "./hooks/useMemoryHole";
+import { useRewardsClaim, REWARDS_CLAIM_ADDR } from "./hooks/useRewardsClaim";
 import { translations } from "./translations";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
@@ -47,10 +48,12 @@ export default function App() {
   const [isDossierExpanded, setIsDossierExpanded] = useState(false);
   const [showConnectors, setShowConnectors] = useState(false);
   const [isSubmitting, setIsSubmitting]     = useState(false); // lock inmediato al click
+  const [claimTokenIds, setClaimTokenIds]   = useState("");
 
-  // ── Wallet & Memory Hole ──────────────────────────────────────────────────
-  const wallet     = useWallet();
-  const memoryHole = useMemoryHole();
+  // ── Wallet, Memory Hole & Rewards Claim ───────────────────────────────────
+  const wallet       = useWallet();
+  const memoryHole   = useMemoryHole();
+  const rewardsClaim = useRewardsClaim();
 
   const handleSetLang = (newLang) => {
     setLang(newLang);
@@ -862,6 +865,100 @@ export default function App() {
                   }}
                 >
                   {t.relics.contractPrefix} {NFT_ADDR.slice(0, 6)}…{NFT_ADDR.slice(-4)}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Relics Claim Module ─────────────────────────────────── */}
+          <div className="relic-claim-card">
+            <div className="relic-claim-header">
+              <div className="relic-claim-title">
+                <span style={{ color: "var(--teal)" }}>⬡</span> {t.relics.claimCard.title}
+              </div>
+              <p className="relic-claim-subtitle">{t.relics.claimCard.subtitle}</p>
+            </div>
+
+            <div className="relic-claim-body">
+              {!wallet.isConnected ? (
+                <div className="relic-claim-locked">
+                  <p>{t.relics.claimCard.connectPrompt}</p>
+                  <button
+                    className="btn-wallet"
+                    onClick={() => setShowConnectors(true)}
+                  >
+                    {lang === "es" ? "CONECTAR WALLET" : "CONNECT WALLET"}
+                  </button>
+                </div>
+              ) : (
+                <div className="relic-claim-form">
+                  <div className="relic-claim-input-group">
+                    <label htmlFor="relic-token-ids">{t.relics.claimCard.tokenLabel}</label>
+                    <input
+                      id="relic-token-ids"
+                      type="text"
+                      placeholder={t.relics.claimCard.tokenPlaceholder}
+                      value={claimTokenIds}
+                      onChange={(e) => setClaimTokenIds(e.target.value)}
+                      disabled={rewardsClaim.step === "claiming"}
+                    />
+                  </div>
+
+                  <button
+                    className="btn-claim-reward"
+                    disabled={!claimTokenIds.trim() || rewardsClaim.step === "claiming"}
+                    onClick={async () => {
+                      const raw = claimTokenIds.split(",").map(s => s.trim()).filter(Boolean);
+                      if (raw.length === 0) return;
+                      await rewardsClaim.claimReward(raw);
+                    }}
+                  >
+                    {rewardsClaim.step === "claiming" ? "CLAIMING…" : t.relics.claimCard.btnClaim}
+                  </button>
+
+                  {/* Claim Status indicators */}
+                  {rewardsClaim.step === "done" && (
+                    <div className="ritual-status ok" style={{ marginTop: 12 }}>
+                      ✓ {t.relics.claimCard.claimSuccess}
+                      {rewardsClaim.claimTxHash && (
+                        <a
+                          href={`https://basescan.org/tx/${rewardsClaim.claimTxHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tx-link"
+                        >
+                          {lang === "es" ? "Ver en Basescan →" : "View on Basescan →"}
+                        </a>
+                      )}
+                      <button
+                        className="btn-reset"
+                        onClick={() => { rewardsClaim.reset(); setClaimTokenIds(""); }}
+                      >
+                        {lang === "es" ? "Reclamar otro" : "Claim another"}
+                      </button>
+                    </div>
+                  )}
+
+                  {rewardsClaim.step === "error" && (
+                    <div className="ritual-status error" style={{ marginTop: 12 }}>
+                      ✗ {rewardsClaim.errorMsg}
+                      <button className="btn-reset" onClick={rewardsClaim.reset}>
+                        {lang === "es" ? "Reintentar" : "Try again"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="relic-claim-footer">
+                <span>{t.relics.claimCard.contractVerified}</span>
+                <a
+                  href={`https://basescan.org/address/${REWARDS_CLAIM_ADDR}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="sec-link"
+                >
+                  {REWARDS_CLAIM_ADDR.slice(0, 6)}…{REWARDS_CLAIM_ADDR.slice(-4)} ↗
                 </a>
               </div>
             </div>

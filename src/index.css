@@ -601,3 +601,106 @@ footer{ padding:56px 24px; border-top:1px solid var(--line); }
   color: #fff;
 }
 
+/* ══ RELIC CLAIM MODULE ══ */
+.relic-claim-card {
+  margin-top: 32px;
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--teal);
+  padding: 28px 32px;
+}
+.relic-claim-header {
+  margin-bottom: 20px;
+}
+.relic-claim-title {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.relic-claim-subtitle {
+  font-size: 13px;
+  color: var(--ink-dim);
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+.relic-claim-locked {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.relic-claim-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 540px;
+}
+.relic-claim-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.relic-claim-input-group label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+}
+.relic-claim-input-group input {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.relic-claim-input-group input:focus {
+  border-color: var(--teal);
+}
+.btn-claim-reward {
+  background: var(--teal);
+  color: var(--void);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 14px 24px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+.btn-claim-reward:hover:not(:disabled) {
+  background: #fff;
+  color: var(--void);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 178, 0.25);
+}
+.btn-claim-reward:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.relic-claim-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+
