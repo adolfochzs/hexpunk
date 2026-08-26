@@ -22,7 +22,7 @@ const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const INITIAL_SUPPLY  = 3_000_000n * 10n ** 18n;
 const DECIMALS        = 18n;
 const DEPLOY_BLOCK    = 48_380_580n; // Block where HEXPUNK was deployed on Base Mainnet
-const CHUNK_SIZE      = 9_900n;      // Public Base RPCs strictly limit getLogs to 10,000 blocks/call
+const CHUNK_SIZE      = 1_999n;      // Alchemy free tier limits getLogs to 2,000 blocks/call
 const MAX_PARALLEL    = 5;           // Max concurrent getLogs requests to avoid rate-limiting
 
 // Memo event ABI
