@@ -88,18 +88,12 @@ function formatTokens(raw) {
   return Number(whole).toLocaleString("en-US");
 }
 
-// ─── Basescan API — fetch ALL Memo logs (no block range limit) ────────────────
+// ─── Blockscout API — fetch ALL Memo logs (no block range limit, free) ────────
 /**
- * Fetches all Memo event logs using the Basescan API with pagination.
- * Basescan returns up to 1,000 results per page; we page through all.
+ * Fetches all Memo event logs using the Base Blockscout API.
  */
-async function fetchLogsFromBasescan() {
-  if (!BASESCAN_KEY) {
-    console.warn("[useChainData] No VITE_BASESCAN_KEY set — skipping log fetch");
-    return [];
-  }
-
-  const baseUrl = "https://api.basescan.org/api";
+async function fetchLogsFromExplorer() {
+  const baseUrl = "https://base.blockscout.com/api";
   const params = new URLSearchParams({
     module:    "logs",
     action:    "getLogs",
@@ -109,7 +103,6 @@ async function fetchLogsFromBasescan() {
     toBlock:   "latest",
     page:      "1",
     offset:    "1000",
-    apikey:    BASESCAN_KEY,
   });
 
   const allLogs = [];
@@ -117,16 +110,20 @@ async function fetchLogsFromBasescan() {
 
   while (true) {
     params.set("page", String(page));
-    const res  = await fetch(`${baseUrl}?${params}`);
-    const json = await res.json();
+    try {
+      const res  = await fetch(`${baseUrl}?${params}`);
+      const json = await res.json();
 
-    if (json.status !== "1" || !Array.isArray(json.result)) break;
+      if (json.status !== "1" || !Array.isArray(json.result)) break;
 
-    allLogs.push(...json.result);
+      allLogs.push(...json.result);
 
-    // Basescan returns max 1000/page; if we got fewer, we're done
-    if (json.result.length < 1000) break;
-    page++;
+      if (json.result.length < 1000) break;
+      page++;
+    } catch (e) {
+      console.warn("[useChainData] Failed to fetch logs from explorer:", e);
+      break;
+    }
   }
 
   return allLogs;
@@ -161,7 +158,7 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
 
         // Re-fetch logs if cache is cold or stale
         if (!logs || (now - _lastFetchTime) > CACHE_TTL_MS) {
-          logs = await fetchLogsFromBasescan();
+          logs = await fetchLogsFromExplorer();
           _cachedLogs    = logs;
           _lastFetchTime = now;
         }
@@ -193,14 +190,20 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
         });
         const recent = sorted.slice(0, 10);
 
-        const scars = recent.map((log) => ({
-          from:    shortAddr(log.topics[1]),
-          memo:    decodeBytes32(log.topics[2] ?? ""),
-          timeAgo: log.timeStamp
-            ? timeAgo(Number(log.timeStamp))
-            : "?",
-          txHash:  log.transactionHash,
-        }));
+        const scars = recent.map((log) => {
+          let ts = null;
+          if (log.timeStamp) {
+            ts = typeof log.timeStamp === "string" && log.timeStamp.startsWith("0x")
+              ? parseInt(log.timeStamp, 16)
+              : Number(log.timeStamp);
+          }
+          return {
+            from:    shortAddr(log.topics[1]),
+            memo:    decodeBytes32(log.topics[2] ?? ""),
+            timeAgo: ts ? timeAgo(ts) : "?",
+            txHash:  log.transactionHash,
+          };
+        });
 
         const activeCustodians = new Set(
           logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
