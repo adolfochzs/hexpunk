@@ -31,7 +31,7 @@ export const wagmiConfig = createConfig({
     // silently hangs deciding between Smart Wallet / extension / QR popup.
     coinbaseWallet({
       appName: "HEXPUNK",
-      appLogoUrl: "https://hexpunk.base.org/favicon.ico",
+      appLogoUrl: "https://www.hexpunk.xyz/favicon.ico",
       preference: {
         options: "all", // "all" (default) | "smartWalletOnly" | "eoaOnly"
       },
