@@ -53,14 +53,18 @@ const STATS_ABI = [
   },
 ];
 
-// ─── Client with automatic RPC Fallback ───────────────────────────────────────
+// ─── Client with Alchemy RPC (+ public fallback) ─────────────────────────────
+// NOTE: base.llamarpc.com and 1rpc.io block CORS from custom origins — removed.
+const ALCHEMY_KEY = import.meta.env.VITE_ALCHEMY_KEY || "";
+const ALCHEMY_RPC = ALCHEMY_KEY
+  ? `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : null;
+
 const client = createPublicClient({
   chain: base,
-  transport: fallback([
-    http("https://mainnet.base.org"),
-    http("https://base.llamarpc.com"),
-    http("https://1rpc.io/base"),
-  ]),
+  transport: ALCHEMY_RPC
+    ? fallback([http(ALCHEMY_RPC), http("https://mainnet.base.org")])
+    : http("https://mainnet.base.org"),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
