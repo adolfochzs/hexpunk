@@ -19,9 +19,14 @@ export const wagmiConfig = createConfig({
       ? [walletConnect({ projectId: WC_PROJECT_ID, showQrModal: true })]
       : []),
     // Coinbase Wallet (including Smart Wallet)
+    // `preference.options` is required by SDK v4 — without it the connector
+    // silently hangs deciding between Smart Wallet / extension / QR popup.
     coinbaseWallet({
       appName: "HEXPUNK",
       appLogoUrl: "https://hexpunk.base.org/favicon.ico",
+      preference: {
+        options: "all", // "all" (default) | "smartWalletOnly" | "eoaOnly"
+      },
     }),
   ],
 });
