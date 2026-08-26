@@ -1,18 +1,20 @@
 /**
  * useChainData.js
- * Reads live on-chain data from Base Mainnet — no API key required.
+ * Reads live on-chain data from Base Mainnet.
+ *
+ * Strategy:
+ *   - Historical Memo events → Basescan API (no block range limit, free)
+ *   - Live stats (totalSupply, balanceOf) → Alchemy/public RPC via viem
  *
  * Events consumed:
  *   Memo(address indexed caller, bytes32 indexed memo)
  *   topic0: 0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8
- *          = keccak256("Memo(address,bytes32)")
  *
  * Contract: 0xb20000000000000000000024A9Cd928Ff6277db8 ($HEXPUNK B20)
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
- * Deploy block: 48,380,580 — scans ALL history since genesis
  */
 
-import { createPublicClient, http, fallback } from "viem";
+import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { useState, useEffect } from "react";
 
@@ -21,19 +23,22 @@ const HEXPUNK_ADDRESS = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const DEAD_ADDRESS    = "0x000000000000000000000000000000000000dEaD";
 const INITIAL_SUPPLY  = 3_000_000n * 10n ** 18n;
 const DECIMALS        = 18n;
-const DEPLOY_BLOCK    = 48_380_580n; // Block where HEXPUNK was deployed on Base Mainnet
-const CHUNK_SIZE      = 1_999n;      // Alchemy free tier limits getLogs to 2,000 blocks/call
-const MAX_PARALLEL    = 5;           // Max concurrent getLogs requests to avoid rate-limiting
 
-// Memo event ABI
-const TRANSFER_WITH_MEMO_EVENT = {
-  type: "event",
-  name: "Memo",
-  inputs: [
-    { name: "caller", type: "address", indexed: true },
-    { name: "memo", type: "bytes32", indexed: true },
-  ],
-};
+// Memo event topic0 = keccak256("Memo(address,bytes32)")
+const MEMO_TOPIC0 = "0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8";
+
+// ─── API keys ─────────────────────────────────────────────────────────────────
+const BASESCAN_KEY = import.meta.env.VITE_BASESCAN_KEY || "";
+const ALCHEMY_KEY  = import.meta.env.VITE_ALCHEMY_KEY  || "";
+const ALCHEMY_RPC  = ALCHEMY_KEY
+  ? `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : null;
+
+// ─── viem client — for live stats only (totalSupply, balanceOf) ───────────────
+const client = createPublicClient({
+  chain: base,
+  transport: http(ALCHEMY_RPC || "https://mainnet.base.org"),
+});
 
 // ABI for totalSupply and balanceOf
 const STATS_ABI = [
@@ -53,20 +58,6 @@ const STATS_ABI = [
   },
 ];
 
-// ─── Client with Alchemy RPC (+ public fallback) ─────────────────────────────
-// NOTE: base.llamarpc.com and 1rpc.io block CORS from custom origins — removed.
-const ALCHEMY_KEY = import.meta.env.VITE_ALCHEMY_KEY || "";
-const ALCHEMY_RPC = ALCHEMY_KEY
-  ? `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
-  : null;
-
-const client = createPublicClient({
-  chain: base,
-  transport: ALCHEMY_RPC
-    ? fallback([http(ALCHEMY_RPC), http("https://mainnet.base.org")])
-    : http("https://mainnet.base.org"),
-});
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Decode a hex bytes32 topic into a human-readable UTF-8 string. */
@@ -84,20 +75,11 @@ function decodeBytes32(hex) {
   }
 }
 
-/** Extract checksummed-style short address from a 32-byte padded topic. */
+/** Extract short address from a 32-byte padded topic. */
 function shortAddr(topic) {
   if (!topic) return "0x???";
   const addr = "0x" + topic.slice(-40);
   return addr.slice(0, 6) + "…" + addr.slice(-4);
-}
-
-/** Estimate relative time using block distance (Base ≈ 2s/block). */
-function blocksToTimeAgo(logBlock, latestBlock) {
-  const diffSeconds = Number(latestBlock - logBlock) * 2;
-  if (diffSeconds < 60) return `${Math.max(1, diffSeconds)}s ago`;
-  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
-  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
-  return `${Math.floor(diffSeconds / 86400)}d ago`;
 }
 
 /** Format a raw BigInt token amount (18 decimals) to a locale string. */
@@ -106,109 +88,58 @@ function formatTokens(raw) {
   return Number(whole).toLocaleString("en-US");
 }
 
+// ─── Basescan API — fetch ALL Memo logs (no block range limit) ────────────────
 /**
- * Fetch ALL Memo logs from fromBlock to toBlock.
- * Splits the range into 9,900-block chunks and runs MAX_PARALLEL at a time
- * to cover the full chain history without hitting RPC rate limits.
+ * Fetches all Memo event logs using the Basescan API with pagination.
+ * Basescan returns up to 1,000 results per page; we page through all.
  */
-async function getAllLogs(fromBlock, toBlock) {
-  // Build the full list of chunks from fromBlock to toBlock
-  const chunks = [];
-  let cur = fromBlock;
-  while (cur <= toBlock) {
-    const end = cur + CHUNK_SIZE - 1n < toBlock ? cur + CHUNK_SIZE - 1n : toBlock;
-    chunks.push({ from: cur, to: end });
-    cur = end + 1n;
+async function fetchLogsFromBasescan() {
+  if (!BASESCAN_KEY) {
+    console.warn("[useChainData] No VITE_BASESCAN_KEY set — skipping log fetch");
+    return [];
   }
 
-  const logs = [];
+  const baseUrl = "https://api.basescan.org/api";
+  const params = new URLSearchParams({
+    module:    "logs",
+    action:    "getLogs",
+    address:   HEXPUNK_ADDRESS,
+    topic0:    MEMO_TOPIC0,
+    fromBlock: "0",
+    toBlock:   "latest",
+    page:      "1",
+    offset:    "1000",
+    apikey:    BASESCAN_KEY,
+  });
 
-  // Run chunks in batches of MAX_PARALLEL to avoid rate-limiting
-  for (let i = 0; i < chunks.length; i += MAX_PARALLEL) {
-    const batch = chunks.slice(i, i + MAX_PARALLEL);
-    const results = await Promise.allSettled(
-      batch.map((c) =>
-        client.getLogs({
-          address: HEXPUNK_ADDRESS,
-          event: TRANSFER_WITH_MEMO_EVENT,
-          fromBlock: c.from,
-          toBlock: c.to,
-        })
-      )
-    );
-    for (const res of results) {
-      if (res.status === "fulfilled" && Array.isArray(res.value)) {
-        logs.push(...res.value);
-      }
-    }
+  const allLogs = [];
+  let page = 1;
+
+  while (true) {
+    params.set("page", String(page));
+    const res  = await fetch(`${baseUrl}?${params}`);
+    const json = await res.json();
+
+    if (json.status !== "1" || !Array.isArray(json.result)) break;
+
+    allLogs.push(...json.result);
+
+    // Basescan returns max 1000/page; if we got fewer, we're done
+    if (json.result.length < 1000) break;
+    page++;
   }
 
-  return logs;
-}
-
-// ─── Main fetch function ──────────────────────────────────────────────────────
-export async function fetchChainData() {
-  const latestBlock = await client.getBlockNumber();
-
-  // Parallel: ALL event logs (full history since deploy) + supply + dead balance
-  const [logsResult, supplyResult, deadResult] = await Promise.allSettled([
-    getAllLogs(DEPLOY_BLOCK, latestBlock),
-    client.readContract({
-      address: HEXPUNK_ADDRESS,
-      abi: STATS_ABI,
-      functionName: "totalSupply",
-    }),
-    client.readContract({
-      address: HEXPUNK_ADDRESS,
-      abi: STATS_ABI,
-      functionName: "balanceOf",
-      args: [DEAD_ADDRESS],
-    }),
-  ]);
-
-  const logs = logsResult.status === "fulfilled" ? logsResult.value : [];
-  const currentSupply = supplyResult.status === "fulfilled" ? supplyResult.value : INITIAL_SUPPLY;
-  const deadBalance = deadResult.status === "fulfilled" ? deadResult.value : 0n;
-
-  // Calculate burned supply: (INITIAL_SUPPLY - totalSupply) + dead balance
-  const burnedRaw = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
-
-  // Sort by block ascending, take latest 10, display newest first
-  const sortedLogs = [...logs].sort((a, b) =>
-    a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0
-  );
-  const recentLogs = sortedLogs.slice(-10).reverse();
-
-  const scars = recentLogs.map((log) => ({
-    from: shortAddr(log.topics[1]),
-    memo: decodeBytes32(log.topics[2] ?? ""),
-    timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
-    txHash: log.transactionHash,
-  }));
-
-  // Unique wallet addresses that have ever inscribed a scar
-  const activeCustodians = new Set(
-    logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
-  ).size;
-
-  return {
-    scars,
-    totalScars: logs.length,
-    burnedFragments: formatTokens(burnedRaw),
-    activeCustodians,
-  };
+  return allLogs;
 }
 
 // ─── Module-level cache ───────────────────────────────────────────────────────
-// Persists across React re-mounts so the full history scan (~200 RPC calls)
-// only happens once per browser session. Subsequent polls only fetch new blocks.
-let _cachedLogs       = [];          // All Memo logs seen so far
-let _lastScannedBlock = DEPLOY_BLOCK - 1n; // Last block fully scanned
+let _cachedLogs      = null;   // null = never fetched; [] = fetched but empty
+let _lastFetchTime   = 0;
+const CACHE_TTL_MS   = 20 * 60 * 1000; // 20 minutes
 
 // ─── React hook ──────────────────────────────────────────────────────────────
 /**
- * @param {number} refreshMs  How often to re-poll for new blocks.
- *                            Default: 20 minutes. Set to 0 to disable auto-refresh.
+ * @param {number} refreshMs  How often to re-poll. Default: 20 minutes.
  */
 export function useChainData(refreshMs = 20 * 60 * 1000) {
   const [data, setData] = useState({
@@ -225,21 +156,17 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
 
     async function poll() {
       try {
-        const latestBlock = await client.getBlockNumber();
+        const now = Date.now();
+        let logs = _cachedLogs;
 
-        // Only scan blocks we haven't seen yet
-        const fromBlock = _lastScannedBlock + 1n;
-
-        let newLogs = [];
-        if (fromBlock <= latestBlock) {
-          newLogs = await getAllLogs(fromBlock, latestBlock);
-          _cachedLogs = [..._cachedLogs, ...newLogs];
-          _lastScannedBlock = latestBlock;
+        // Re-fetch logs if cache is cold or stale
+        if (!logs || (now - _lastFetchTime) > CACHE_TTL_MS) {
+          logs = await fetchLogsFromBasescan();
+          _cachedLogs    = logs;
+          _lastFetchTime = now;
         }
 
-        const logs = _cachedLogs;
-
-        // Parallel: supply + dead balance (always fresh)
+        // Parallel: live supply + dead balance via RPC
         const [supplyResult, deadResult] = await Promise.allSettled([
           client.readContract({
             address: HEXPUNK_ADDRESS,
@@ -255,19 +182,23 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
         ]);
 
         const currentSupply = supplyResult.status === "fulfilled" ? supplyResult.value : INITIAL_SUPPLY;
-        const deadBalance   = deadResult.status === "fulfilled"   ? deadResult.value   : 0n;
+        const deadBalance   = deadResult.status   === "fulfilled" ? deadResult.value   : 0n;
         const burnedRaw     = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
 
-        // Sort by block, take latest 10, newest first
-        const sortedLogs = [...logs].sort((a, b) =>
-          a.blockNumber < b.blockNumber ? -1 : a.blockNumber > b.blockNumber ? 1 : 0
-        );
-        const recentLogs = sortedLogs.slice(-10).reverse();
+        // Sort by blockNumber descending, take latest 10
+        const sorted = [...logs].sort((a, b) => {
+          const ba = BigInt(a.blockNumber);
+          const bb = BigInt(b.blockNumber);
+          return ba < bb ? 1 : ba > bb ? -1 : 0;
+        });
+        const recent = sorted.slice(0, 10);
 
-        const scars = recentLogs.map((log) => ({
+        const scars = recent.map((log) => ({
           from:    shortAddr(log.topics[1]),
           memo:    decodeBytes32(log.topics[2] ?? ""),
-          timeAgo: blocksToTimeAgo(log.blockNumber, latestBlock),
+          timeAgo: log.timeStamp
+            ? timeAgo(Number(log.timeStamp))
+            : "?",
           txHash:  log.transactionHash,
         }));
 
@@ -291,14 +222,13 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
       }
     }
 
-    // Initial fetch
     poll();
 
-    // Re-poll when user returns to this tab (e.g. after signing a tx in their wallet)
-    const onVisible = () => { if (!cancelled && document.visibilityState === "visible") poll(); };
+    const onVisible = () => {
+      if (!cancelled && document.visibilityState === "visible") poll();
+    };
     document.addEventListener("visibilitychange", onVisible);
 
-    // Periodic refresh every 20 min (only fetches NEW blocks — very cheap)
     let timer;
     if (refreshMs > 0) {
       timer = setInterval(() => { if (!cancelled) poll(); }, refreshMs);
@@ -312,4 +242,13 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
   }, [refreshMs]);
 
   return data;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function timeAgo(unixSeconds) {
+  const diff = Math.floor(Date.now() / 1000) - unixSeconds;
+  if (diff < 60)    return `${Math.max(1, diff)}s ago`;
+  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
 }
