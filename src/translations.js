@@ -179,6 +179,17 @@ export const translations = {
       step2: "Cellular Memory Injection: each Relic holder can claim 1,000 $HEXPUNK on-chain from the Creator's Reserve.",
       step3: "Upon completing the anchoring, the keys to the pool are permanently incinerated. The organism remains fused to the network.",
     },
+    security: {
+      badge: "ON-CHAIN SECURITY GUARANTEE",
+      title: "On-Chain Security Guarantee",
+      exactAllowanceTitle: "Exact Allowance",
+      exactAllowanceDesc: "This dApp never requests unlimited token approvals. You only approve the exact amount you choose to use.",
+      noBlindSignTitle: "No Blind Signatures",
+      noBlindSignDesc: "We never ask for opaque off-chain message signatures (eth_sign).",
+      openSourceTitle: "Open Source",
+      openSourceDesc: "All smart contracts are immutable and verified on",
+      verifiedLink: "Basescan",
+    },
     footer: {
       tagline: "$HEXPUNK — Archaeological record of a post-biological memory",
       basescan: "Basescan",
@@ -365,6 +376,17 @@ export const translations = {
       step2: "Inyección de Memoria Celular: cada poseedor de una Reliquia puede reclamar 1,000 $HEXPUNK on-chain desde la Reserva del Creador.",
       step3: "Una vez completado el anclaje, las llaves de la piscina de liquidez serán incineradas permanentemente. El organismo queda fundido a la red.",
     },
+    security: {
+      badge: "GARANTÍA DE SEGURIDAD ON-CHAIN",
+      title: "Garantía de Seguridad On-Chain",
+      exactAllowanceTitle: "Aprobación Exacta",
+      exactAllowanceDesc: "Esta dApp nunca solicita permisos infinitos (Unlimited Allowance). Solo apruebas la cantidad exacta que decides utilizar.",
+      noBlindSignTitle: "Sin Firmas Ciegas",
+      noBlindSignDesc: "No solicitamos firmas opacas fuera de cadena (eth_sign).",
+      openSourceTitle: "Código Abierto",
+      openSourceDesc: "Todos los contratos inteligentes son inmutables y están verificados en",
+      verifiedLink: "Basescan",
+    },
     footer: {
       tagline: "$HEXPUNK — Registro arqueológico de una memoria post-biológica",
       basescan: "Basescan",
@@ -374,3 +396,4 @@ export const translations = {
     },
   },
 };
+

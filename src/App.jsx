@@ -458,6 +458,44 @@ export default function App() {
               <p>{t.memoryHole.caps.burnMemoDesc}</p>
             </div>
           </div>
+
+          {/* ── Security Guarantee Banner ───────────────────────────────── */}
+          <div className="security-guarantee-card">
+            <div className="sec-header">
+              <span className="sec-icon">🛡️</span>
+              <span className="sec-badge">{t.security?.badge}</span>
+            </div>
+            <div className="sec-grid">
+              <div className="sec-item">
+                <div className="sec-item-title">
+                  <span className="sec-bullet">✓</span> {t.security?.exactAllowanceTitle}
+                </div>
+                <p className="sec-item-desc">{t.security?.exactAllowanceDesc}</p>
+              </div>
+              <div className="sec-item">
+                <div className="sec-item-title">
+                  <span className="sec-bullet">✓</span> {t.security?.noBlindSignTitle}
+                </div>
+                <p className="sec-item-desc">{t.security?.noBlindSignDesc}</p>
+              </div>
+              <div className="sec-item">
+                <div className="sec-item-title">
+                  <span className="sec-bullet">✓</span> {t.security?.openSourceTitle}
+                </div>
+                <p className="sec-item-desc">
+                  {t.security?.openSourceDesc}{" "}
+                  <a
+                    href={`https://basescan.org/token/${CONTRACT_ADDR}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="sec-link"
+                  >
+                    {t.security?.verifiedLink || "Basescan"} ↗
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
