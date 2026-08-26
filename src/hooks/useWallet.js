@@ -14,7 +14,7 @@ export function useWallet() {
   const [error, setError] = useState(null);
 
   const handleConnect = useCallback(
-    async (connector) => {
+    (connector) => {
       setError(null);
       try {
         connect({ connector });
