@@ -14,7 +14,7 @@
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
  */
 
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, decodeAbiParameters } from "viem";
 import { base } from "viem/chains";
 import { useState, useEffect } from "react";
 
@@ -26,6 +26,8 @@ const DECIMALS        = 18n;
 
 // Memo event topic0 = keccak256("Memo(address,bytes32)")
 const MEMO_TOPIC0 = "0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553a1825e8";
+// Announcement event topic0 = keccak256("Announcement(address,string,string,string)")
+const ANNOUNCEMENT_TOPIC0 = "0xccebf8218a62875909564adef86a6f4df81503cb617221e793357d62f8e813f7";
 
 // ─── API keys ─────────────────────────────────────────────────────────────────
 const BASESCAN_KEY = import.meta.env.VITE_BASESCAN_KEY || "";
@@ -88,17 +90,17 @@ function formatTokens(raw) {
   return Number(whole).toLocaleString("en-US");
 }
 
-// ─── Blockscout API — fetch ALL Memo logs (no block range limit, free) ────────
+// ─── Blockscout API — fetch logs by topic ────────────────────────────────────
 /**
- * Fetches all Memo event logs using the Base Blockscout API.
+ * Fetches event logs for a given topic0 using the Base Blockscout API.
  */
-async function fetchLogsFromExplorer() {
+async function fetchLogsByTopic(topic0) {
   const baseUrl = "https://base.blockscout.com/api";
   const params = new URLSearchParams({
     module:    "logs",
     action:    "getLogs",
     address:   HEXPUNK_ADDRESS,
-    topic0:    MEMO_TOPIC0,
+    topic0:    topic0,
     fromBlock: "0",
     toBlock:   "latest",
     page:      "1",
@@ -130,9 +132,10 @@ async function fetchLogsFromExplorer() {
 }
 
 // ─── Module-level cache ───────────────────────────────────────────────────────
-let _cachedLogs      = null;   // null = never fetched; [] = fetched but empty
-let _lastFetchTime   = 0;
-const CACHE_TTL_MS   = 20 * 60 * 1000; // 20 minutes
+let _cachedMemos         = null;   // null = never fetched; [] = fetched but empty
+let _cachedAnnouncements = null;
+let _lastFetchTime       = 0;
+const CACHE_TTL_MS       = 20 * 60 * 1000; // 20 minutes
 
 // ─── React hook ──────────────────────────────────────────────────────────────
 /**
@@ -140,8 +143,10 @@ const CACHE_TTL_MS   = 20 * 60 * 1000; // 20 minutes
  */
 export function useChainData(refreshMs = 20 * 60 * 1000) {
   const [data, setData] = useState({
+    events: [],
     scars: [],
     totalScars: 0,
+    totalAnnouncements: 0,
     burnedFragments: "0",
     activeCustodians: 0,
     loading: true,
@@ -154,14 +159,20 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
     async function poll() {
       try {
         const now = Date.now();
-        let logs = _cachedLogs;
 
         // Re-fetch logs if cache is cold or stale
-        if (!logs || (now - _lastFetchTime) > CACHE_TTL_MS) {
-          logs = await fetchLogsFromExplorer();
-          _cachedLogs    = logs;
-          _lastFetchTime = now;
+        if (!_cachedMemos || !_cachedAnnouncements || (now - _lastFetchTime) > CACHE_TTL_MS) {
+          const [memos, announcements] = await Promise.all([
+            fetchLogsByTopic(MEMO_TOPIC0),
+            fetchLogsByTopic(ANNOUNCEMENT_TOPIC0),
+          ]);
+          _cachedMemos         = memos;
+          _cachedAnnouncements = announcements;
+          _lastFetchTime       = now;
         }
+
+        const memoLogs         = _cachedMemos || [];
+        const announcementLogs = _cachedAnnouncements || [];
 
         // Parallel: live supply + dead balance via RPC
         const [supplyResult, deadResult] = await Promise.allSettled([
@@ -182,15 +193,8 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
         const deadBalance   = deadResult.status   === "fulfilled" ? deadResult.value   : 0n;
         const burnedRaw     = (INITIAL_SUPPLY > currentSupply ? INITIAL_SUPPLY - currentSupply : 0n) + deadBalance;
 
-        // Sort by blockNumber descending, take latest 10
-        const sorted = [...logs].sort((a, b) => {
-          const ba = BigInt(a.blockNumber);
-          const bb = BigInt(b.blockNumber);
-          return ba < bb ? 1 : ba > bb ? -1 : 0;
-        });
-        const recent = sorted.slice(0, 10);
-
-        const scars = recent.map((log) => {
+        // Parse Memo events
+        const parsedMemos = memoLogs.map((log) => {
           let ts = null;
           if (log.timeStamp) {
             ts = typeof log.timeStamp === "string" && log.timeStamp.startsWith("0x")
@@ -198,21 +202,65 @@ export function useChainData(refreshMs = 20 * 60 * 1000) {
               : Number(log.timeStamp);
           }
           return {
-            from:    shortAddr(log.topics[1]),
-            memo:    decodeBytes32(log.topics[2] ?? ""),
-            timeAgo: ts ? timeAgo(ts) : "?",
-            txHash:  log.transactionHash,
+            type:        "memo",
+            from:        shortAddr(log.topics[1]),
+            memo:        decodeBytes32(log.topics[2] ?? ""),
+            timeAgo:     ts ? timeAgo(ts) : "?",
+            txHash:      log.transactionHash,
+            blockNumber: BigInt(log.blockNumber || 0),
           };
         });
 
+        // Parse Announcement events
+        const parsedAnnouncements = announcementLogs.map((log) => {
+          let ts = null;
+          if (log.timeStamp) {
+            ts = typeof log.timeStamp === "string" && log.timeStamp.startsWith("0x")
+              ? parseInt(log.timeStamp, 16)
+              : Number(log.timeStamp);
+          }
+          let id = "";
+          let description = "";
+          let uri = "";
+          try {
+            const decoded = decodeAbiParameters(
+              [{ type: "string" }, { type: "string" }, { type: "string" }],
+              log.data
+            );
+            id          = decoded[0];
+            description = decoded[1];
+            uri         = decoded[2];
+          } catch (e) {
+            console.warn("[useChainData] Failed to decode Announcement data:", e);
+          }
+          return {
+            type:        "voice",
+            from:        shortAddr(log.topics[1]),
+            id,
+            description,
+            uri,
+            timeAgo:     ts ? timeAgo(ts) : "?",
+            txHash:      log.transactionHash,
+            blockNumber: BigInt(log.blockNumber || 0),
+          };
+        });
+
+        // Combine and sort by blockNumber descending, take latest 10
+        const allEvents = [...parsedMemos, ...parsedAnnouncements].sort((a, b) => {
+          return a.blockNumber < b.blockNumber ? 1 : a.blockNumber > b.blockNumber ? -1 : 0;
+        });
+        const recent = allEvents.slice(0, 10);
+
         const activeCustodians = new Set(
-          logs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
+          memoLogs.map((log) => log.topics[1]?.toLowerCase()).filter(Boolean)
         ).size;
 
         if (!cancelled)
           setData({
-            scars,
-            totalScars: logs.length,
+            events: recent,
+            scars: recent, // alias so existing references remain valid
+            totalScars: memoLogs.length,
+            totalAnnouncements: announcementLogs.length,
             burnedFragments: formatTokens(burnedRaw),
             activeCustodians,
             loading: false,

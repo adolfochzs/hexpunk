@@ -249,27 +249,49 @@ export default function App() {
                 {t.monitor.noEvents}
               </div>
             ) : (
-              chainData.scars.map((scar, i) => (
+              chainData.scars.map((item, i) => (
                 <div className="feed-row" key={i}>
-                  <FeedTag type="memo" />
-                  <div className="feed-addr">{scar.from}</div>
+                  <FeedTag type={item.type || "memo"} />
+                  <div className="feed-addr">{item.from}</div>
                   <div className="feed-msg">
-                    transferWithMemo →{" "}
-                    {scar.memo ? (
-                      <span className="quote">"{scar.memo}"</span>
+                    {item.type === "voice" ? (
+                      <>
+                        <span style={{ color: "var(--purple)", fontWeight: 700, letterSpacing: "0.03em" }}>
+                          [{item.id}]
+                        </span>{" "}
+                        <span className="quote">"{item.description}"</span>
+                        {item.uri && (
+                          <a
+                            href={item.uri}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: "var(--yellow)", marginLeft: 8, textDecoration: "underline", fontSize: 11 }}
+                            title={item.uri}
+                          >
+                            ↗ {item.uri.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                          </a>
+                        )}
+                      </>
                     ) : (
-                      <span style={{ color: "var(--ink-dim)" }}>[no memo]</span>
+                      <>
+                        transferWithMemo →{" "}
+                        {item.memo ? (
+                          <span className="quote">"{item.memo}"</span>
+                        ) : (
+                          <span style={{ color: "var(--ink-dim)" }}>[no memo]</span>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="feed-time">
                     <a
-                      href={`https://basescan.org/tx/${scar.txHash}`}
+                      href={`https://basescan.org/tx/${item.txHash}`}
                       target="_blank"
                       rel="noreferrer"
                       style={{ color: "var(--ink-dim)", textDecoration: "none" }}
                       title="View on Basescan"
                     >
-                      {scar.timeAgo}
+                      {item.timeAgo}
                     </a>
                   </div>
                 </div>
@@ -293,7 +315,7 @@ export default function App() {
             </div>
             <div className="stat">
               <div className="n">
-                {chainData.loading ? "—" : chainData.totalScars.toLocaleString()}
+                {chainData.loading ? "—" : (chainData.totalAnnouncements ?? 0).toLocaleString()}
               </div>
               <div className="l">{t.monitor.stats.transmissions}</div>
             </div>
