@@ -14,7 +14,7 @@
  * Dead addr: 0x000000000000000000000000000000000000dEaD  (burned supply)
  */
 
-import { createPublicClient, http, decodeAbiParameters } from "viem";
+import { createPublicClient, http, fallback, decodeAbiParameters } from "viem";
 import { base } from "viem/chains";
 import { useState, useEffect } from "react";
 
@@ -29,7 +29,8 @@ const MEMO_TOPIC0 = "0x6989f5818dcfd11f8cd53b27c94cec33dae1589735f03e639cba54553
 // Announcement event topic0 = keccak256("Announcement(address,string,string,string)")
 const ANNOUNCEMENT_TOPIC0 = "0xccebf8218a62875909564adef86a6f4df81503cb617221e793357d62f8e813f7";
 
-// ─── API keys ─────────────────────────────────────────────────────────────────
+// ─── RPC endpoints ────────────────────────────────────────────────────────────
+const CDP_RPC      = import.meta.env.VITE_CDP_RPC_URL || "https://api.developer.coinbase.com/rpc/v1/base/bfKcCJ7nH3vh6dHauxcFRjYFxhRHFbmI";
 const BASESCAN_KEY = import.meta.env.VITE_BASESCAN_KEY || "";
 const ALCHEMY_KEY  = import.meta.env.VITE_ALCHEMY_KEY  || "";
 const ALCHEMY_RPC  = ALCHEMY_KEY
@@ -39,7 +40,11 @@ const ALCHEMY_RPC  = ALCHEMY_KEY
 // ─── viem client — for live stats only (totalSupply, balanceOf) ───────────────
 const client = createPublicClient({
   chain: base,
-  transport: http(ALCHEMY_RPC || "https://mainnet.base.org"),
+  transport: fallback([
+    http(CDP_RPC),
+    ...(ALCHEMY_RPC ? [http(ALCHEMY_RPC)] : []),
+    http("https://mainnet.base.org"),
+  ]),
 });
 
 // ABI for totalSupply and balanceOf

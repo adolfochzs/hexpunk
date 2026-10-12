@@ -3,6 +3,7 @@ import { base } from "wagmi/chains";
 import { injected, walletConnect, coinbaseWallet } from "@wagmi/connectors";
 
 // ─── RPC endpoints ────────────────────────────────────────────────────────────
+const CDP_RPC      = import.meta.env.VITE_CDP_RPC_URL || "https://api.developer.coinbase.com/rpc/v1/base/bfKcCJ7nH3vh6dHauxcFRjYFxhRHFbmI";
 const ALCHEMY_KEY  = import.meta.env.VITE_ALCHEMY_KEY || "";
 const ALCHEMY_URL  = ALCHEMY_KEY
   ? `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
@@ -15,9 +16,11 @@ const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID || "";
 export const wagmiConfig = createConfig({
   chains: [base],
   transports: {
-    [base.id]: ALCHEMY_URL
-      ? fallback([http(ALCHEMY_URL), http("https://mainnet.base.org")])
-      : http("https://mainnet.base.org"),
+    [base.id]: fallback([
+      http(CDP_RPC),
+      ...(ALCHEMY_URL ? [http(ALCHEMY_URL)] : []),
+      http("https://mainnet.base.org"),
+    ]),
   },
   connectors: [
     // MetaMask & browser injected wallets (highest priority)
