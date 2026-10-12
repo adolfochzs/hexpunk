@@ -18,6 +18,9 @@ export const translations = {
       relicsContractLabel: "Relics Contract (ERC-721)",
       ctaWhitepaper: "READ MANIFESTO",
       ctaDrop: "VIEW OPENSEA DROP ↗",
+      ctaBuy: "BUY ON AERODROME ↗",
+      ctaChart: "VIEW CHART ↗",
+      officialNotice: "Only official contract:",
     },
     monitor: {
       eyebrow: "Live on-chain activity",
@@ -206,6 +209,8 @@ export const translations = {
       whitepaper: "Whitepaper",
       docs: "Docs B20",
       memoryHole: "Memory Hole",
+      buy: "Buy on Aerodrome",
+      chart: "Chart",
     },
   },
   es: {
@@ -225,6 +230,9 @@ export const translations = {
       relicsContractLabel: "Contrato de Reliquias (ERC-721)",
       ctaWhitepaper: "LEER MANIFIESTO",
       ctaDrop: "VER DROP EN OPENSEA ↗",
+      ctaBuy: "COMPRAR EN AERODROME ↗",
+      ctaChart: "VER GRÁFICA ↗",
+      officialNotice: "Único contrato oficial:",
     },
     monitor: {
       eyebrow: "Actividad en vivo en la cadena",
@@ -413,6 +421,8 @@ export const translations = {
       whitepaper: "Whitepaper",
       docs: "Docs B20",
       memoryHole: "Memory Hole",
+      buy: "Comprar en Aerodrome",
+      chart: "Gráfica",
     },
   },
 };

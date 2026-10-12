@@ -13,6 +13,11 @@ const CONTRACT_ADDR      = "0xb20000000000000000000024A9Cd928Ff6277db8";
 const NFT_ADDR           = "0xad745891c3f90D94fB68bf0656Ea9EE1B5297161";
 const MEMORY_HOLE_ADDR   = "0x31605c0d4729B82D7C61039ccab06b53278d7E6E"; // Deployed & verified Aug 2026
 const OPENSEA_DROP_URL   = "https://opensea.io/collection/hexpunk-2026/";
+const POOL_ADDR          = "0x703b56c521d76ee9a409d61c751df3c6e75ace64"; // Aerodrome HEXPUNK/USDC
+const USDC_ADDR          = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; // Native USDC on Base
+// Hardcoded official links (never built from user input) — https only.
+const AERODROME_SWAP_URL = `https://aerodrome.finance/swap?from=${USDC_ADDR}&to=${CONTRACT_ADDR}`;
+const DEXSCREENER_URL    = `https://dexscreener.com/base/${POOL_ADDR}`;
 
 function calcDay() {
   const diff = Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86_400_000);
@@ -212,6 +217,29 @@ export default function App() {
             style={{ borderColor: "var(--yellow)", color: "var(--yellow)" }}
           >
             {t.hero.ctaDrop}
+          </a>
+          <a
+            href={AERODROME_SWAP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            style={{ borderColor: "var(--teal)", color: "var(--teal)" }}
+          >
+            {t.hero.ctaBuy}
+          </a>
+          <a
+            href={DEXSCREENER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+          >
+            {t.hero.ctaChart}
+          </a>
+        </div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink-dim)", marginTop: 16, wordBreak: "break-all", textAlign: "center" }}>
+          {t.hero.officialNotice}{" "}
+          <a href={`https://basescan.org/token/${CONTRACT_ADDR}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--acid)" }}>
+            {CONTRACT_ADDR}
           </a>
         </div>
         <div className="scroll-cue">↓ {lang === "es" ? "CONTINUAR RECONSTRUCCIÓN" : "CONTINUE RECONSTRUCTION"}</div>
@@ -739,13 +767,13 @@ export default function App() {
                 <div className="supply-num">3,000,000 $HEXPUNK</div>
                 <div className="supply-label">{t.tokenomics.strictCapLabel}</div>
                 <div className="dist-bar">
-                  <div className="dist-seg" style={{ width: "66.7%", background: "var(--teal)" }}>66.7%</div>
+                  <a href={DEXSCREENER_URL} target="_blank" rel="noopener noreferrer" className="dist-seg" style={{ width: "66.7%", background: "var(--teal)", color: "inherit", textDecoration: "none" }}>66.7%</a>
                   <div className="dist-seg" style={{ width: "3.3%", background: "var(--yellow)" }}>3.3%</div>
                   <div className="dist-seg" style={{ width: "10%", background: "var(--magenta)" }}>10%</div>
                   <div className="dist-seg" style={{ width: "20%", background: "var(--purple)", color: "var(--ink)" }}>20%</div>
                 </div>
                 <div className="dist-legend">
-                  <span><i style={{ background: "var(--teal)" }} />LP (DEX) — 66.7% (2,000,000)</span>
+                  <span><i style={{ background: "var(--teal)" }} /><a href={DEXSCREENER_URL} target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>LP (DEX) — 66.7% (2,000,000) ↗</a></span>
                   <span><i style={{ background: "var(--yellow)" }} />NFT Relics — 3.3% (100,000)</span>
                   <span><i style={{ background: "var(--magenta)" }} />Founders Circle — 10% (300,000)</span>
                   <span><i style={{ background: "var(--purple)" }} />Creator (Operation) — 20% (600,000)</span>
@@ -1012,6 +1040,8 @@ export default function App() {
             <a href="https://github.com/adolfochzs/hexpunk/blob/main/README.md" target="_blank" rel="noreferrer">{t.footer.whitepaper}</a>
             <a href="https://docs.base.org/base-chain/specs/upgrades/beryl/b20" target="_blank" rel="noreferrer">{t.footer.docs}</a>
             <a href="#memoryhole">{t.footer.memoryHole}</a>
+            <a href={AERODROME_SWAP_URL} target="_blank" rel="noopener noreferrer">{t.footer.buy}</a>
+            <a href={DEXSCREENER_URL} target="_blank" rel="noopener noreferrer">{t.footer.chart}</a>
           </div>
         </div>
       </footer>
