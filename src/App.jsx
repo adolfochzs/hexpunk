@@ -564,6 +564,7 @@ export default function App() {
             <div className="header-line">{t.manifesto.headerStatus}</div>
             <div className="header-line">{t.manifesto.headerClass}</div>
             <div className="header-line">{t.manifesto.headerCompiler}</div>
+            <div className="header-line">{t.manifesto.headerLicense}</div>
           </div>
 
           {/* ── Document Tabs ─────────────────────────────────────────── */}
@@ -706,6 +707,11 @@ export default function App() {
                       <td>Base Chain Specs (Beryl / B20)</td>
                       <td>docs.base.org</td>
                     </tr>
+                    <tr>
+                      <td>Licensing Protocol</td>
+                      <td>Dual License: MIT / CC BY 4.0</td>
+                      <td>Open Source & Open Culture</td>
+                    </tr>
                   </tbody>
                 </table>
 
@@ -728,6 +734,11 @@ export default function App() {
                 <div className="signoff">
                   {t.manifesto.signoffFinal}<br />
                   <code>[CONNECTION LOST]</code>
+                </div>
+
+                <div style={{ marginTop: "24px", padding: "12px 16px", border: "1px solid var(--line)", background: "rgba(0,0,0,0.35)", fontSize: "0.78rem", color: "var(--ink-dim)", fontFamily: "monospace", borderRadius: "2px", lineHeight: "1.5" }}>
+                  <span style={{ color: "var(--acid)" }}>[LEGAL RECORD / ATTRIBUTION]</span> {t.manifesto.legalNotice}{" "}
+                  <a href="https://github.com/adolfochzs/hexpunk/blob/main/LICENSE.md" target="_blank" rel="noreferrer" style={{ color: "var(--acid)", textDecoration: "underline" }}>LICENSE.md ↗</a>
                 </div>
               </div>
             )}
