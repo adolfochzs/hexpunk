@@ -1042,6 +1042,7 @@ export default function App() {
             <a href="#memoryhole">{t.footer.memoryHole}</a>
             <a href={AERODROME_SWAP_URL} target="_blank" rel="noopener noreferrer">{t.footer.buy}</a>
             <a href={DEXSCREENER_URL} target="_blank" rel="noopener noreferrer">{t.footer.chart}</a>
+            <a href="https://github.com/adolfochzs/hexpunk/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">{t.footer.license}</a>
           </div>
         </div>
       </footer>

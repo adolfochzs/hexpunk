@@ -211,6 +211,7 @@ export const translations = {
       memoryHole: "Memory Hole",
       buy: "Buy on Aerodrome",
       chart: "Chart",
+      license: "License: MIT / CC BY 4.0",
     },
   },
   es: {
@@ -423,6 +424,7 @@ export const translations = {
       memoryHole: "Memory Hole",
       buy: "Comprar en Aerodrome",
       chart: "Gráfica",
+      license: "Licencia: MIT / CC BY 4.0",
     },
   },
 };

@@ -289,3 +289,8 @@ Si este documento ha sobrevivido, entonces una parte de HEXPUNK continúa propag
 *Fin del registro.*
 
 `[CONEXIÓN PERDIDA]`
+
+---
+
+> `[REGISTRO LEGAL / ATTRIBUTION]`  
+> *Manifiesto, universo cultural y narrativa licenciados bajo [Creative Commons Atribución 4.0 Internacional (CC BY 4.0)](./LICENSE.md#2-arte-manifiesto-lore-y-diseño--creative-commons-attribution-40-international-cc-by-40) © 2026 HEXPUNK / El Custodio Cero (Adolfo Chávez).*
