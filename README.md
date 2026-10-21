@@ -23,7 +23,7 @@ $HEXPUNK es un token B20 nativo en la red Base que documenta el Bit Rot: el mome
 | Estándar | B20 ASSET — superset nativo de ERC-20 |
 | Supply Total | 3,000,000 $HEXPUNK (cerrado, inmutable) |
 | **Piscina Liquidez (Aerodrome)** | [`0x703b56c521d76ee9a409d61c751df3c6e75ace64`](https://basescan.org/address/0x703b56c521d76ee9a409d61c751df3c6e75ace64) (Par: HEXPUNK / USDC) |
-| **Gráfica & Mercado** | [DexScreener ($HEXPUNK)](https://dexscreener.com/base/0x703b56c521d76ee9a409d61c751df3c6e75ace64) |
+| **Gráfica & Mercado** | [GeckoTerminal ($HEXPUNK)](https://www.geckoterminal.com/base/pools/0x703b56c521d76ee9a409d61c751df3c6e75ace64) |
 | **Swap Descentralizado** | [Aerodrome Finance](https://aerodrome.finance/swap?from=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&to=0xb20000000000000000000024A9Cd928Ff6277db8) |
 | Memory Hole (Incinerador) | [`0x31605c0d4729B82D7C61039ccab06b53278d7E6E`](https://basescan.org/address/0x31605c0d4729B82D7C61039ccab06b53278d7E6E) |
 | Rewards Claim (Reliquias) | [`0x17d138064C32c97ED546b285E466c30370546e99`](https://basescan.org/address/0x17d138064C32c97ED546b285E466c30370546e99) |
@@ -145,7 +145,7 @@ Para destruir fragmentos de memoria de forma irreversible y dejar un epitafio pe
 3. El evento `SacrificeOfMemory` queda grabado en la cadena para siempre.
 
 **Dirección del Memory Hole:** [`0x31605c0d4729B82D7C61039ccab06b53278d7E6E`](https://basescan.org/address/0x31605c0d4729B82D7C61039ccab06b53278d7E6E)  
-**Piscina de Liquidez (Aerodrome):** [`0x703b56c521d76ee9a409d61c751df3c6e75ace64`](https://basescan.org/address/0x703b56c521d76ee9a409d61c751df3c6e75ace64) · [DexScreener](https://dexscreener.com/base/0x703b56c521d76ee9a409d61c751df3c6e75ace64)  
+**Piscina de Liquidez (Aerodrome):** [`0x703b56c521d76ee9a409d61c751df3c6e75ace64`](https://basescan.org/address/0x703b56c521d76ee9a409d61c751df3c6e75ace64) · [GeckoTerminal](https://www.geckoterminal.com/base/pools/0x703b56c521d76ee9a409d61c751df3c6e75ace64)  
 **Colección de Reliquias (NFTs en OpenSea):** [`0xad745891c3f90d94fb68bf0656ea9ee1b5297161`](https://basescan.org/address/0xad745891c3f90d94fb68bf0656ea9ee1b5297161)
 
 ---
