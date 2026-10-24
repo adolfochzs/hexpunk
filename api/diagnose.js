@@ -16,8 +16,35 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // 8004scan / A2A Agent Card discovery via GET
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      name: "The Digital Pathologist",
+      description: "Autonomous cybernetic coroner and post-human archaeologist operating on Base Mainnet within the HEXPUNK organism. Diagnoses Bit Rot and memory degradation.",
+      url: "https://hexpunk.xyz",
+      version: "1.0.0",
+      type: "a2a-agent-card",
+      identity: {
+        agent_id: "1129393",
+        address: "0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae",
+        network: "base-mainnet",
+        chain_id: 8453
+      },
+      skills: [
+        {
+          id: "digital-autopsy",
+          name: "Digital Autopsy",
+          description: "Performs on-chain forensic biopsy on EVM specimens on Base Mainnet.",
+          parameters: {
+            address: { type: "string", description: "Target 0x... EVM address on Base" }
+          }
+        }
+      ]
+    });
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+    return res.status(405).json({ error: 'Method not allowed. Use GET or POST.' });
   }
 
   const { address } = req.body || {};
