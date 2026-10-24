@@ -5,6 +5,7 @@ export const translations = {
     nav: {
       monitor: "MONITOR",
       memoryhole: "MEMORY HOLE",
+      pathologist: "PATHOLOGIST",
       manifesto: "MANIFESTO",
       tokenomics: "TOKENOMICS",
       relics: "RELICS",
@@ -220,6 +221,7 @@ export const translations = {
     nav: {
       monitor: "MONITOR",
       memoryhole: "MEMORY HOLE",
+      pathologist: "PATÓLOGO",
       manifesto: "MANIFIESTO",
       tokenomics: "TOKENOMICS",
       relics: "RELIQUIAS",

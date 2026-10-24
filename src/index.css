@@ -703,4 +703,279 @@ footer{ padding:56px 24px; border-top:1px solid var(--line); }
   align-items: center;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SECTOR ZERO CLINICAL LAB: THE DIGITAL PATHOLOGIST SCANNER
+   ═══════════════════════════════════════════════════════════════ */
+.patient-scanner-container {
+  background: rgba(15, 15, 19, 0.7);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--acid);
+  backdrop-filter: blur(10px);
+  padding: 32px;
+  margin: 40px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.scanner-header {
+  margin-bottom: 24px;
+}
+.scanner-title {
+  font-family: var(--pixel);
+  font-size: 13px;
+  color: var(--acid);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.blink-dot {
+  color: var(--magenta);
+  animation: crtPulse 1.2s infinite;
+}
+@keyframes crtPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.scanner-desc {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-dim);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.scanner-form {
+  margin-bottom: 20px;
+}
+.scanner-input-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.scanner-input {
+  flex: 1;
+  min-width: 280px;
+  background: rgba(9, 9, 11, 0.9);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 14px 16px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.scanner-input:focus {
+  border-color: var(--acid);
+  box-shadow: 0 0 15px rgba(124, 255, 46, 0.15);
+}
+.btn-use-wallet {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 16px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+.btn-use-wallet:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--ink-dim);
+}
+.btn-execute-biopsy {
+  background: var(--acid);
+  color: var(--void);
+  border: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 14px 24px;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all 0.2s ease;
+}
+.btn-execute-biopsy:hover:not(:disabled) {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(124, 255, 46, 0.35);
+}
+.btn-execute-biopsy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.scanner-error {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--magenta);
+}
+
+/* Loading box */
+.scanner-loading-box {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(124, 255, 46, 0.25);
+  padding: 24px;
+  margin-top: 20px;
+  position: relative;
+}
+.loading-text-glitch {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--acid);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+.loading-bar-pulse {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.loading-bar-inner {
+  height: 100%;
+  width: 40%;
+  background: var(--acid);
+  animation: loadingSlide 1.2s infinite ease-in-out;
+}
+@keyframes loadingSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+/* Report Card */
+.autopsy-report-card {
+  margin-top: 28px;
+  background: rgba(9, 9, 11, 0.95);
+  border: 1px solid rgba(124, 255, 46, 0.3);
+  padding: 24px;
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.report-badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.report-specimen-id {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+}
+.report-stage-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  background: rgba(255, 46, 154, 0.15);
+  border: 1px solid var(--magenta);
+  color: var(--magenta);
+  letter-spacing: 0.05em;
+}
+.report-coord {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.vital-signs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.vital-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vital-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 0.05em;
+}
+.vital-val {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+.vital-val.acid { color: var(--acid); }
+.vital-val.yellow { color: var(--yellow); }
+.vital-val.magenta { color: var(--magenta); }
+.vital-val.teal { color: var(--teal); }
+
+.report-terminal-output {
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+}
+.terminal-bar {
+  background: #111116;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.live-pill {
+  color: var(--acid);
+}
+.terminal-body {
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #cfcfe0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.scar-prescription-box {
+  background: rgba(255, 46, 154, 0.04);
+  border: 1px solid rgba(255, 46, 154, 0.2);
+  padding: 16px;
+}
+.scar-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--magenta);
+  margin-bottom: 8px;
+}
+.scar-memo-code {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px dashed rgba(255, 46, 154, 0.4);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--yellow);
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.scar-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+
+
 

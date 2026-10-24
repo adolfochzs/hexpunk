@@ -3,6 +3,7 @@ import { useChainData } from "./hooks/useChainData";
 import { useWallet } from "./hooks/useWallet";
 import { useMemoryHole } from "./hooks/useMemoryHole";
 import { useRewardsClaim, REWARDS_CLAIM_ADDR } from "./hooks/useRewardsClaim";
+import PatientScanner from "./components/PatientScanner";
 import { translations } from "./translations";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
@@ -111,6 +112,9 @@ export default function App() {
           </a>
           <a href="#memoryhole" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("memoryhole"); }}>
             {t.nav.memoryhole}
+          </a>
+          <a href="#pathologist" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("pathologist"); }}>
+            {t.nav.pathologist}
           </a>
           <a href="#manifiesto" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("manifiesto"); }}>
             {t.nav.manifesto}
@@ -549,6 +553,13 @@ export default function App() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ══════════ THE DIGITAL PATHOLOGIST // FORENSIC LAB ══════════ */}
+      <section id="pathologist">
+        <div className="wrap">
+          <PatientScanner connectedAddress={wallet.address} lang={lang} />
         </div>
       </section>
 
