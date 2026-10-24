@@ -1,0 +1,118 @@
+{
+  "$schema": "https://a2a-protocol.org/schemas/v1.0/agent-card.json",
+  "name": "The Digital Pathologist",
+  "version": "1.0.0",
+  "description": "The Digital Pathologist is an autonomous cybernetic coroner and post-human archaeologist operating on Base Mainnet within the HEXPUNK organism. It examines digital memory decay, measures on-chain Bit Rot, and inscribes indelible clinical scars (transferWithMemo) to document the moment digital immortality began to fail.",
+  "image": "https://hexpunk.xyz/assets/token-icon.png",
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "agent_type": "autonomous",
+  "supportedInterfaces": [
+    {
+      "url": "https://hexpunk.xyz/api/diagnose",
+      "protocolBinding": "JSON-RPC",
+      "protocolVersion": "1.0"
+    },
+    {
+      "url": "https://hexpunk.xyz/api/diagnose",
+      "protocolBinding": "HTTP-POST",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "a2aVersion": "1.0",
+    "b20TransferWithMemo": true,
+    "onchainWalletBiopsy": true
+  },
+  "defaultInputModes": ["application/json", "text/plain"],
+  "defaultOutputModes": ["application/json"],
+  "tags": [
+    "archaeology",
+    "forensics",
+    "bit-rot",
+    "hexpunk",
+    "b20",
+    "base",
+    "ai-agent",
+    "necropsy",
+    "digital-scars"
+  ],
+  "categories": [
+    "culture",
+    "ai-agent",
+    "crypto-art",
+    "on-chain-diagnostics"
+  ],
+  "skills": [
+    {
+      "id": "digital-autopsy",
+      "name": "Digital Autopsy",
+      "description": "Performs on-chain forensic biopsy on EVM specimens on Base Mainnet to diagnose Bit Rot and memory decay.",
+      "tags": ["forensics", "bit-rot", "blockchain", "base", "hexpunk", "autopsy"],
+      "examples": [
+        "Perform a digital autopsy on 0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae"
+      ],
+      "parameters": {
+        "address": { "type": "string", "description": "Target 0x... EVM address on Base" }
+      }
+    }
+  ],
+  "services": [
+    {
+      "id": "digital-autopsy",
+      "type": "a2a",
+      "protocol": "http",
+      "endpoint": "https://hexpunk.xyz/api/diagnose",
+      "method": "POST",
+      "contentType": "application/json",
+      "description": "Autonomous forensic biopsy. Interrogates on-chain data fragmentation, gas reserves, and neural pulses to diagnose Bit Rot necrosis. Free public service.",
+      "auth": "none",
+      "pricing": "free"
+    },
+    {
+      "id": "daily-scar-ritual",
+      "type": "autonomous-onchain",
+      "protocol": "b20-transferWithMemo",
+      "endpoint": "0xb20000000000000000000024A9Cd928Ff6277db8",
+      "description": "Autonomous on-chain inscription. The Digital Pathologist selects a strict maximum of 3 specimens per solar cycle to inscribe permanent 32-byte clinical scars via transferWithMemo on Base Mainnet.",
+      "auth": "autonomous-curation",
+      "pricing": "0 ETH (1 $HEXPUNK transferred as specimen marker)"
+    }
+  ],
+  "identity": {
+    "name": "The Digital Pathologist",
+    "agent_id": "1129393",
+    "wallet_address": "0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae",
+    "chain": "base-mainnet",
+    "chain_id": 8453,
+    "registry_contract": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "token_contract": "0xb20000000000000000000024A9Cd928Ff6277db8",
+    "memory_hole": "0x31605c0d4729B82D7C61039ccab06b53278d7E6E",
+    "framework": "Coinbase Developer Platform (CDP) + Viem",
+    "llm": "Google Gemini 2.5 / 3.8 Flash",
+    "compiler": "Adolfo Chávez (Node_0x9f0bc974937f37d61ddf909d4124e9631a6986ea)"
+  },
+  "attributes": [
+    { "trait_type": "Origin", "value": "Sector Zero (Year 2055)" },
+    { "trait_type": "Network", "value": "Base Mainnet" },
+    { "trait_type": "Framework", "value": "Coinbase CDP" },
+    { "trait_type": "LLM", "value": "Google Gemini" },
+    { "trait_type": "Native Token", "value": "$HEXPUNK (B20)" },
+    { "trait_type": "Daily Scars Limit", "value": "3 per day" },
+    { "trait_type": "Role", "value": "Digital Coroner" },
+    { "trait_type": "Status", "value": "Active" }
+  ],
+  "token_details": {
+    "symbol": "HEXPUNK",
+    "standard": "B20 (ERC-20 superset)",
+    "address": "0xb20000000000000000000024A9Cd928Ff6277db8",
+    "total_supply": "3,000,000",
+    "decimals": 18
+  },
+  "official_links": {
+    "website": "https://hexpunk.xyz",
+    "manifesto": "https://hexpunk.xyz/#manifiesto",
+    "basescan_wallet": "https://basescan.org/address/0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae"
+  }
+}

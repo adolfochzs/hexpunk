@@ -1,10 +1,32 @@
 {
+  "$schema": "https://a2a-protocol.org/schemas/v1.0/agent-card.json",
   "name": "The Digital Pathologist",
+  "version": "1.0.0",
   "description": "The Digital Pathologist is an autonomous cybernetic coroner and post-human archaeologist operating on Base Mainnet within the HEXPUNK organism. It examines digital memory decay, measures on-chain Bit Rot, and inscribes indelible clinical scars (transferWithMemo) to document the moment digital immortality began to fail.",
   "image": "https://hexpunk.xyz/assets/token-icon.png",
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-  "version": "1.0.0",
   "agent_type": "autonomous",
+  "supportedInterfaces": [
+    {
+      "url": "https://hexpunk.xyz/api/diagnose",
+      "protocolBinding": "JSON-RPC",
+      "protocolVersion": "1.0"
+    },
+    {
+      "url": "https://hexpunk.xyz/api/diagnose",
+      "protocolBinding": "HTTP-POST",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "a2aVersion": "1.0",
+    "b20TransferWithMemo": true,
+    "onchainWalletBiopsy": true
+  },
+  "defaultInputModes": ["application/json", "text/plain"],
+  "defaultOutputModes": ["application/json"],
   "tags": [
     "archaeology",
     "forensics",
@@ -21,6 +43,20 @@
     "ai-agent",
     "crypto-art",
     "on-chain-diagnostics"
+  ],
+  "skills": [
+    {
+      "id": "digital-autopsy",
+      "name": "Digital Autopsy",
+      "description": "Performs on-chain forensic biopsy on EVM specimens on Base Mainnet to diagnose Bit Rot and memory decay.",
+      "tags": ["forensics", "bit-rot", "blockchain", "base", "hexpunk", "autopsy"],
+      "examples": [
+        "Perform a digital autopsy on 0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae"
+      ],
+      "parameters": {
+        "address": { "type": "string", "description": "Target 0x... EVM address on Base" }
+      }
+    }
   ],
   "services": [
     {
@@ -44,18 +80,9 @@
       "pricing": "0 ETH (1 $HEXPUNK transferred as specimen marker)"
     }
   ],
-  "capabilities": [
-    "eth_transfer",
-    "erc20_transfer",
-    "b20_transfer_with_memo",
-    "onchain_wallet_biopsy",
-    "bit_rot_diagnostics",
-    "memory_hole_indexing",
-    "autonomous_patrol"
-  ],
-  "supported_protocols": ["b20", "a2a", "http-json"],
   "identity": {
     "name": "The Digital Pathologist",
+    "agent_id": "1129393",
     "wallet_address": "0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae",
     "chain": "base-mainnet",
     "chain_id": 8453,

@@ -12,35 +12,89 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
+  // Handle HEAD and OPTIONS requests
+  if (req.method === 'OPTIONS' || req.method === 'HEAD') {
     return res.status(200).end();
   }
 
+  const agentCard = {
+    "$schema": "https://a2a-protocol.org/schemas/v1.0/agent-card.json",
+    "name": "The Digital Pathologist",
+    "version": "1.0.0",
+    "description": "Autonomous cybernetic coroner and post-human archaeologist operating on Base Mainnet within the HEXPUNK organism. Diagnoses Bit Rot and memory degradation.",
+    "url": "https://hexpunk.xyz",
+    "image": "https://hexpunk.xyz/assets/token-icon.png",
+    "supportedInterfaces": [
+      {
+        "url": "https://hexpunk.xyz/api/diagnose",
+        "protocolBinding": "JSON-RPC",
+        "protocolVersion": "1.0"
+      },
+      {
+        "url": "https://hexpunk.xyz/api/diagnose",
+        "protocolBinding": "HTTP-POST",
+        "protocolVersion": "1.0"
+      }
+    ],
+    "capabilities": {
+      "streaming": false,
+      "pushNotifications": false,
+      "a2aVersion": "1.0",
+      "b20TransferWithMemo": true,
+      "onchainWalletBiopsy": true
+    },
+    "defaultInputModes": ["application/json", "text/plain"],
+    "defaultOutputModes": ["application/json"],
+    "identity": {
+      "agent_id": "1129393",
+      "address": "0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae",
+      "network": "base-mainnet",
+      "chain_id": 8453,
+      "registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    },
+    "skills": [
+      {
+        "id": "digital-autopsy",
+        "name": "Digital Autopsy",
+        "description": "Performs on-chain forensic biopsy on EVM specimens on Base Mainnet to diagnose Bit Rot and data necrosis.",
+        "tags": ["forensics", "bit-rot", "blockchain", "base", "hexpunk", "autopsy"],
+        "examples": [
+          "Perform a digital autopsy on 0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae"
+        ],
+        "parameters": {
+          "address": { "type": "string", "description": "Target 0x... EVM address on Base" }
+        }
+      }
+    ]
+  };
+
   // 8004scan / A2A Agent Card discovery via GET
   if (req.method === 'GET') {
-    return res.status(200).json({
-      name: "The Digital Pathologist",
-      description: "Autonomous cybernetic coroner and post-human archaeologist operating on Base Mainnet within the HEXPUNK organism. Diagnoses Bit Rot and memory degradation.",
-      url: "https://hexpunk.xyz",
-      version: "1.0.0",
-      type: "a2a-agent-card",
-      identity: {
-        agent_id: "1129393",
-        address: "0xcb8e5DAE6ccf90c31d723046f4034F3B20b9f2Ae",
-        network: "base-mainnet",
-        chain_id: 8453
-      },
-      skills: [
-        {
-          id: "digital-autopsy",
-          name: "Digital Autopsy",
-          description: "Performs on-chain forensic biopsy on EVM specimens on Base Mainnet.",
-          parameters: {
-            address: { type: "string", description: "Target 0x... EVM address on Base" }
-          }
-        }
-      ]
-    });
+    return res.status(200).json(agentCard);
+  }
+
+  // Handle JSON-RPC 2.0 if invoked via A2A protocol
+  if (req.method === 'POST' && req.body && req.body.jsonrpc === '2.0') {
+    const { id, method, params } = req.body;
+    if (method === 'rpc.discover' || method === 'getAgentCard' || method === 'agent.card' || method === 'agent.getCard') {
+      return res.status(200).json({
+        jsonrpc: '2.0',
+        result: agentCard,
+        id: id || 1
+      });
+    }
+    if (method === 'ping') {
+      return res.status(200).json({
+        jsonrpc: '2.0',
+        result: { status: 'healthy', timestamp: Date.now() },
+        id: id || 1
+      });
+    }
+    // If method is autopsy or message/send with address
+    const targetAddress = params?.address || params?.message?.text || params?.text;
+    if (targetAddress && isAddress(targetAddress)) {
+      req.body.address = targetAddress;
+    }
   }
 
   if (req.method !== 'POST') {

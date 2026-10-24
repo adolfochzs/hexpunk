@@ -1,4 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/(.*)/\\.well-known/agent-card.json",
+      "destination": "/.well-known/agent-card.json"
+    },
+    {
+      "source": "/(.*)/\\.well-known/agent.json",
+      "destination": "/.well-known/agent.json"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
