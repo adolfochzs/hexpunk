@@ -7,6 +7,14 @@
     {
       "source": "/(.*)/\\.well-known/agent.json",
       "destination": "/.well-known/agent.json"
+    },
+    {
+      "source": "/pathologist",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/patologo",
+      "destination": "/index.html"
     }
   ],
   "headers": [

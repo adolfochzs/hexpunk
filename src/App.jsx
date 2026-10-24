@@ -3,8 +3,7 @@ import { useChainData } from "./hooks/useChainData";
 import { useWallet } from "./hooks/useWallet";
 import { useMemoryHole } from "./hooks/useMemoryHole";
 import { useRewardsClaim, REWARDS_CLAIM_ADDR } from "./hooks/useRewardsClaim";
-import PatientScanner from "./components/PatientScanner";
-import ScarsFeed from "./components/ScarsFeed";
+import PathologistPage from "./components/PathologistPage";
 import { translations } from "./translations";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
@@ -57,6 +56,36 @@ export default function App() {
   const [isSubmitting, setIsSubmitting]     = useState(false); // lock inmediato al click
   const [claimTokenIds, setClaimTokenIds]   = useState("");
 
+  // ── Pathologist dedicated page routing ────────────────────────────────────
+  const isPathologistRoute = () => {
+    if (typeof window === "undefined") return false;
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    return path.includes("pathologist") || path.includes("patologo") || hash.includes("pathologist") || hash.includes("patologo");
+  };
+
+  const [currentRoute, setCurrentRoute] = useState(() => isPathologistRoute() ? "pathologist" : "home");
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentRoute(isPathologistRoute() ? "pathologist" : "home");
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigateTo = (route) => {
+    if (route === "pathologist") {
+      window.history.pushState({}, "", "/pathologist");
+      setCurrentRoute("pathologist");
+      window.scrollTo(0, 0);
+    } else {
+      window.history.pushState({}, "", "/");
+      setCurrentRoute("home");
+      window.scrollTo(0, 0);
+    }
+  };
+
   // ── Wallet, Memory Hole & Rewards Claim ───────────────────────────────────
   const wallet       = useWallet();
   const memoryHole   = useMemoryHole();
@@ -98,6 +127,18 @@ export default function App() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  if (currentRoute === "pathologist") {
+    return (
+      <PathologistPage
+        wallet={wallet}
+        lang={lang}
+        setLang={handleSetLang}
+        onBack={() => navigateTo("home")}
+        t={t}
+      />
+    );
+  }
+
   return (
     <>
       {/* ── Integrity Bar ──────────────────────────────────────────────────── */}
@@ -114,9 +155,14 @@ export default function App() {
           <a href="#memoryhole" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("memoryhole"); }}>
             {t.nav.memoryhole}
           </a>
-          <a href="#pathologist" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("pathologist"); }}>
-            {t.nav.pathologist}
-          </a>
+          <button
+            type="button"
+            className="nav-link-pill nav-link-pathologist"
+            onClick={() => navigateTo("pathologist")}
+            title="Laboratorio Forense"
+          >
+            {t.nav.pathologist} ↗
+          </button>
           <a href="#manifiesto" className="nav-link-pill" onClick={(e) => { e.preventDefault(); handleScrollTo("manifiesto"); }}>
             {t.nav.manifesto}
           </a>
@@ -557,11 +603,46 @@ export default function App() {
         </div>
       </section>
 
-      {/* ══════════ THE DIGITAL PATHOLOGIST // FORENSIC LAB ══════════ */}
-      <section id="pathologist">
+      {/* ══════════ THE DIGITAL PATHOLOGIST // CALLOUT BANNER ══════════ */}
+      <section id="pathologist" className="pathologist-callout-section">
         <div className="wrap">
-          <PatientScanner connectedAddress={wallet.address} lang={lang} />
-          <ScarsFeed lang={lang} />
+          <div className="pathologist-card-banner">
+            <div className="pathologist-banner-avatar-wrap">
+              <img
+                src="/digital_pathologist_avatar.jpg"
+                alt="The Digital Pathologist"
+                className="pathologist-banner-thumb"
+              />
+              <div className="pathologist-banner-badge">ONLINE</div>
+            </div>
+
+            <div className="pathologist-banner-text">
+              <div className="pathologist-banner-eyebrow">
+                <span className="blink-dot">■</span> {t.pathologistBanner?.eyebrow}
+              </div>
+              <h2 className="pathologist-banner-title">{t.pathologistBanner?.title}</h2>
+              <p className="pathologist-banner-desc">{t.pathologistBanner?.desc}</p>
+
+              <div className="pathologist-banner-meta">
+                <span className="banner-tag">🛡️ {t.pathologistBanner?.statsQuota}</span>
+                <span className="banner-tag">📍 {t.pathologistBanner?.statsStatus}</span>
+                <span className="banner-tag">🔗 BASE MAINNET</span>
+              </div>
+            </div>
+
+            <div className="pathologist-banner-action-wrap">
+              <button
+                type="button"
+                className="btn-enter-lab"
+                onClick={() => navigateTo("pathologist")}
+              >
+                {t.pathologistBanner?.btn}
+              </button>
+              <div className="banner-helper-note">
+                {lang === "es" ? "Portal clínico y bitácora en vivo" : "Live clinical portal & log"}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
