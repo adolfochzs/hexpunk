@@ -4,6 +4,7 @@ import { useWallet } from "./hooks/useWallet";
 import { useMemoryHole } from "./hooks/useMemoryHole";
 import { useRewardsClaim, REWARDS_CLAIM_ADDR } from "./hooks/useRewardsClaim";
 import PatientScanner from "./components/PatientScanner";
+import ScarsFeed from "./components/ScarsFeed";
 import { translations } from "./translations";
 
 // ─── Project constants ─────────────────────────────────────────────────────────
@@ -560,6 +561,7 @@ export default function App() {
       <section id="pathologist">
         <div className="wrap">
           <PatientScanner connectedAddress={wallet.address} lang={lang} />
+          <ScarsFeed lang={lang} />
         </div>
       </section>
 

@@ -977,5 +977,230 @@ footer{ padding:56px 24px; border-top:1px solid var(--line); }
   line-height: 1.5;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   LIVE SCARS FEED COMPONENT
+   ═══════════════════════════════════════════════════════════════ */
+.scars-feed-container {
+  margin-top: 36px;
+  background: rgba(12, 12, 16, 0.85);
+  border: 1px solid rgba(124, 255, 46, 0.2);
+  border-top: 2px solid var(--acid);
+  padding: 24px;
+  backdrop-filter: blur(12px);
+}
+.scars-feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+.scars-feed-title {
+  font-family: var(--pixel);
+  font-size: 12px;
+  color: var(--acid);
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scars-pulse-dot {
+  color: var(--acid);
+  animation: crtPulse 1s infinite;
+}
+.scars-feed-subtitle {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 6px;
+}
+.scars-feed-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quota-pill {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quota-label {
+  color: var(--ink-dim);
+}
+.quota-val {
+  font-weight: 700;
+}
+.btn-feed-refresh {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-feed-refresh:hover:not(:disabled) {
+  border-color: var(--acid);
+  color: var(--acid);
+  transform: rotate(90deg);
+}
+.scars-feed-loading {
+  padding: 30px 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.feed-loading-text {
+  margin-top: 12px;
+  display: inline-block;
+  letter-spacing: 0.05em;
+}
+.scars-feed-empty {
+  padding: 30px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-dim);
+  border: 1px dashed var(--line);
+}
+.scars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.scar-card {
+  background: rgba(18, 18, 24, 0.9);
+  border: 1px solid var(--line);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+.scar-card:hover {
+  border-color: rgba(124, 255, 46, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.scar-card-top {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+.scar-index-badge {
+  color: var(--magenta);
+  font-weight: 700;
+}
+.scar-block-badge {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.scar-memo-container {
+  margin-bottom: 14px;
+}
+.scar-memo-tag {
+  background: #000;
+  border: 1px solid rgba(124, 255, 46, 0.3);
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #888;
+  word-break: break-all;
+}
+.scar-memo-tag .highlight {
+  color: var(--acid);
+  font-weight: 700;
+}
+.scar-card-details {
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.scar-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.detail-key {
+  color: var(--ink-dim);
+}
+.detail-val {
+  font-weight: 600;
+}
+.mono-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mono-link:hover {
+  color: var(--acid);
+}
+.scar-card-actions {
+  margin-top: auto;
+}
+.btn-basescan-link {
+  display: block;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+.btn-basescan-link:hover {
+  background: var(--acid);
+  color: var(--void);
+  border-color: var(--acid);
+}
+.scars-feed-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+.footer-agent-link, .registry-link {
+  color: var(--acid);
+  text-decoration: underline;
+}
+.feed-timestamp {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+
 
 
