@@ -76,8 +76,8 @@ export default function ScarsFeed({ lang = "en" }) {
       ) : scars.length === 0 ? (
         <div className="scars-feed-empty">
           {lang === "es"
-            ? "No se han emitido cicatrices hoy. El agente patrulla cada 60 minutos."
-            : "No scars inscribed today yet. The agent patrols every 60 minutes."}
+            ? "No se han emitido cicatrices hoy. El agente ejecuta su ritual cada 24 horas (3 especímenes seleccionados)."
+            : "No scars inscribed today yet. The agent executes its ritual every 24 hours (3 selected specimens)."}
         </div>
       ) : (
         <div className="scars-grid">
